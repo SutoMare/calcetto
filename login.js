@@ -7,7 +7,48 @@ const userSelect = document.getElementById('user-select');
 const passwordInput = document.getElementById('password-input');
 const errorMessage = document.getElementById('error-message');
 
-// Cosa succede quando premiamo "Entra nel Torneo"
+// --- 1. NUOVA FUNZIONE: CARICAMENTO DINAMICO DEI GIOCATORI ---
+async function caricaGiocatori() {
+  try {
+    // Chiediamo a Supabase tutti i nomi dalla tabella giocatori, in ordine alfabetico
+    const { data: giocatori, error } = await supabase
+      .from('giocatori')
+      .select('nome')
+      .order('nome', { ascending: true });
+
+    if (error) throw error;
+
+    // Svuotiamo il menu a tendina e inseriamo l'opzione iniziale
+    userSelect.innerHTML = '<option value="" disabled selected>Seleziona chi sei...</option>';
+
+    if (!giocatori || giocatori.length === 0) {
+      const option = document.createElement('option');
+      option.disabled = true;
+      option.textContent = "Nessun giocatore trovato nel DB";
+      userSelect.appendChild(option);
+      return;
+    }
+
+    // Inseriamo dinamicamente un'opzione per ogni giocatore trovato nel database
+    giocatori.forEach(giocatore => {
+      const option = document.createElement('option');
+      option.value = giocatore.nome; // Deve combaciare esattamente con il nome nel database!
+      // Mettiamo la prima lettera maiuscola per estetica
+      option.textContent = giocatore.nome.charAt(0).toUpperCase() + giocatore.nome.slice(1); 
+      userSelect.appendChild(option);
+    });
+
+  } catch (error) {
+    console.error("Errore nel caricamento dei giocatori:", error.message);
+    userSelect.innerHTML = '<option value="" disabled selected>Errore di connessione</option>';
+  }
+}
+
+// Facciamo partire il caricamento dei giocatori appena la pagina si apre
+caricaGiocatori();
+
+
+// --- 2. LOGICA DEL LOGIN ---
 loginForm.addEventListener('submit', async function(event) {
   event.preventDefault(); // Evita che la pagina si aggiorni da sola
 
@@ -15,16 +56,14 @@ loginForm.addEventListener('submit', async function(event) {
   const nomeScelto = userSelect.value;
   const passwordInserita = passwordInput.value;
 
-  // Nascondiamo il messaggio di errore (nel caso fosse visibile da un tentativo precedente)
+  // Nascondiamo il messaggio di errore
   errorMessage.style.display = 'none';
 
   try {
-    // 1. Chiediamo a Supabase di cercare l'utente
-    // Traduzione: "Dalla tabella giocatori, seleziona tutto (*) dove il nome è uguale a nomeScelto E la password è uguale a passwordInserita"
+    // Chiediamo a Supabase di cercare l'utente
     const { data, error } = await supabase
       .from('giocatori')
       .select('*')
-      // Assicurati che i nomi scritti nel value dell'HTML combacino perfettamente (maiuscole/minuscole) con la colonna 'nome' su Supabase
       .eq('nome', nomeScelto) 
       .eq('password', passwordInserita);
 
@@ -32,20 +71,19 @@ loginForm.addEventListener('submit', async function(event) {
       throw error;
     }
 
-    // 2. Verifichiamo il risultato
+    // Verifichiamo il risultato
     if (data && data.length > 0) {
-      // LOGIN AVVENUTO CON SUCCESSO!
+      // LOGIN AVVENUTO CON SUCCESSO
       console.log("Accesso consentito a:", nomeScelto);
       
-      // Salviamo il nome nel "localStorage" del browser.
-      // Così la pagina pronostico.html saprà chi siamo senza chiederlo di nuovo.
+      // Salviamo il nome nel browser
       localStorage.setItem('utenteLoggato', nomeScelto);
       
       // Ti porto alla pagina dei pronostici
       window.location.href = 'pronostico.html';
       
     } else {
-      // LOGIN FALLITO (Nessuna riga trovata con quel nome + password)
+      // LOGIN FALLITO
       errorMessage.textContent = 'Password errata, riprova!';
       errorMessage.style.display = 'block';
     }
