@@ -1,12 +1,167 @@
 <!DOCTYPE html>
-<html lang="">
-  <head>
-    <meta charset="utf-8">
-    <title></title>
-  </head>
-  <body>
-    <header></header>
-    <main></main>
-    <footer></footer>
-  </body>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Storico Giocatore - Fanta Mondiali</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* Stili per la pagina del giocatore */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #ddd;
+    }
+    .profile-pic-large {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #007bff;
+      background-color: #eee;
+      color: transparent;
+    }
+    
+    /* Stile per la tabella dello storico */
+    .history-table-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      overflow-x: auto; /* Permette di scorrere lateralmente sui telefoni */
+    }
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    .history-table th, .history-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+    .history-table th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    /* Stile per i punti (Badge verdi) */
+    .point-badge {
+      display: inline-block;
+      background-color: #28a745;
+      color: white;
+      font-size: 0.8em;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 12px;
+      margin-left: 5px;
+    }
+    /* Stile per un pronostico sbagliato (nessun punto) */
+    .no-points {
+      color: #999;
+      font-size: 0.9em;
+    }
+    /* Colonna dei punti totali in grande */
+    .total-points-cell {
+      font-size: 1.3em;
+      font-weight: bold;
+      text-align: center;
+      color: #007bff;
+    }
+    
+    /* Dettagli all'interno della cella pronostico */
+    .pred-detail {
+      margin-bottom: 4px;
+      font-size: 0.95em;
+    }
+  </style>
+</head>
+<body style="font-family: sans-serif; margin: 0; padding: 20px; background-color: #f4f7f6;">
+
+  <div style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+    <a href="index.html" style="text-decoration: none; color: #555; font-weight: bold;">⬅️ Torna alla Classifica</a>
+      
+    <a href="login.html" style="padding: 10px 20px; background-color: #28a745; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        Fai Pronostico 📝
+    </a>
+  </div>
+
+  <main>
+    <div class="profile-header">
+      <img id="foto-giocatore" src="default.jpg" alt="Foto Giocatore" class="profile-pic-large">
+      <div>
+        <h1 style="margin: 0;">Storico di <span id="nome-giocatore" style="text-transform: capitalize;">Caricamento...</span></h1>
+        <p style="margin: 5px 0 0 0; color: #666;">Punti Totali in classifica: <strong id="punteggio-totale">...</strong></p>
+      </div>
+    </div>
+
+    <div class="history-table-container">
+      <h2>Le sue scommesse</h2>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Partita</th>
+            <th>Il suo Pronostico</th>
+            <th>Risultato Effettivo</th>
+            <th style="text-align: center;">Punti Vinti</th>
+          </tr>
+        </thead>
+        <tbody id="storico-body">
+          
+          <tr>
+            <td><strong>🇮🇹 Italia vs 🇧🇷 Brasile</strong></td>
+            <td>
+              <div class="pred-detail">Segno: 1 <span class="point-badge">+2 pt</span></div>
+              <div class="pred-detail">Risultato: 2-1 <span class="point-badge">+3 pt</span></div>
+              <div class="pred-detail">Marcatori: Barella <span class="point-badge">+1 pt</span></div>
+            </td>
+            <td>
+              <div class="pred-detail">Vince: Italia (1)</div>
+              <div class="pred-detail">Risultato: 2-1</div>
+              <div class="pred-detail">Marcatori: Barella, Neymar</div>
+            </td>
+            <td class="total-points-cell">6</td>
+          </tr>
+
+          <tr>
+            <td><strong>🇫🇷 Francia vs 🇦🇷 Argentina</strong></td>
+            <td>
+              <div class="pred-detail">Segno: X <span class="point-badge">+2 pt</span></div>
+              <div class="pred-detail">Risultato: 1-1 <span class="no-points">(errato)</span></div>
+              <div class="pred-detail">Marcatori: Mbappe <span class="point-badge">+1 pt</span></div>
+            </td>
+            <td>
+              <div class="pred-detail">Pareggio (X)</div>
+              <div class="pred-detail">Risultato: 2-2</div>
+              <div class="pred-detail">Marcatori: Mbappe(2), Messi(2)</div>
+            </td>
+            <td class="total-points-cell">3</td>
+          </tr>
+          
+          <tr>
+            <td><strong>🇪🇸 Spagna vs 🇩🇪 Germania</strong></td>
+            <td>
+              <div class="pred-detail">Segno: 1 <span class="no-points">(errato)</span></div>
+              <div class="pred-detail">Risultato: 3-0 <span class="no-points">(errato)</span></div>
+              <div class="pred-detail">Marcatori: Nessuno</div>
+            </td>
+            <td>
+              <div class="pred-detail">Vince: Germania (2)</div>
+              <div class="pred-detail">Risultato: 0-1</div>
+              <div class="pred-detail">Marcatori: Muller</div>
+            </td>
+            <td class="total-points-cell" style="color: #999;">0</td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+<script type="module" src="giocatore.js"></script>
+</body>
 </html>

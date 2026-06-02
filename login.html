@@ -1,12 +1,107 @@
 <!DOCTYPE html>
-<html lang="">
-  <head>
-    <meta charset="utf-8">
-    <title></title>
-  </head>
-  <body>
-    <header></header>
-    <main></main>
-    <footer></footer>
-  </body>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Login - Fanta Mondiali</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* Qualche stile di base per rendere il form carino da subito */
+    .login-container {
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      text-align: center;
+      font-family: sans-serif;
+    }
+    .user-selection {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .profile-pic {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      background-color: #eee;
+      border: 2px solid #333;
+    }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    input[type="password"], select {
+      padding: 10px;
+      width: 80%;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <main>
+    <div class="login-container">
+      <h2>Accedi per scommettere</h2>
+      
+      <form id="login-form">
+        
+        <div class="user-selection">
+          <img id="user-icon" src="default.jpg" alt="Foto Profilo" class="profile-pic">
+          
+          <select id="user-select" required>
+            <option value="" disabled selected>Seleziona chi sei...</option>
+            <option value="marco">Marco</option>
+            <option value="giulia">Giulia</option>
+            <option value="luca">Luca</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <input type="password" id="password-input" placeholder="Inserisci la tua password" required>
+        </div>
+
+        <button type="submit">Entra nel Torneo</button>
+      </form>
+      
+      <p id="error-message" style="color: red; display: none;">Password errata, riprova!</p>
+    </div>
+  </main>
+
+<script>
+    // --- LOGICA PER CAMBIARE LA FOTO PROFILO --- //
+    
+    // 1. Prendiamo gli elementi dalla pagina
+    const userSelect = document.getElementById('user-select');
+    const userIcon = document.getElementById('user-icon');
+
+    // 2. Diciamo al browser: "Ogni volta che il menu a tendina cambia, esegui questa funzione"
+    userSelect.addEventListener('change', function() {
+      // Prendi il valore selezionato (es. 'marco')
+      const selectedUser = userSelect.value;
+      
+      // Cambia il percorso dell'immagine aggiungendo '.jpg'
+      userIcon.src = selectedUser + '.jpg';
+      
+      // Se l'immagine non dovesse caricarsi, rimetti un'immagine di default
+      userIcon.onerror = function() {
+        userIcon.src = 'default.jpg'; 
+      };
+    });
+  </script>
+  
+  <script type="module" src="login.js"></script>
+</body>
 </html>

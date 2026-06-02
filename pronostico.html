@@ -1,12 +1,128 @@
 <!DOCTYPE html>
-<html lang="">
-  <head>
-    <meta charset="utf-8">
-    <title></title>
-  </head>
-  <body>
-    <header></header>
-    <main></main>
-    <footer></footer>
-  </body>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Fai il tuo Pronostico</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* Stili specifici per il form dei pronostici */
+    .form-container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      font-family: sans-serif;
+    }
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box; /* Evita che il padding sbordi */
+    }
+    .score-inputs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .score-inputs input {
+      width: 60px;
+      text-align: center;
+      font-size: 1.2em;
+    }
+    button[type="submit"] {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+    .welcome-banner {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #eee;
+    }
+    .optional-badge {
+      font-weight: normal;
+      color: #888;
+      font-size: 0.8em;
+    }
+  </style>
+</head>
+<body>
+
+  <div style="padding: 20px;">
+    <a href="index.html" style="text-decoration: none; color: #555;">⬅️ Torna alla Home</a>
+  </div>
+
+  <main>
+    <div class="form-container">
+      
+      <div class="welcome-banner">
+        <h2>Fai la tua giocata!</h2>
+        <p>Stai scommettendo come: <strong id="nome-utente-display">...</strong></p>
+      </div>
+
+      <form id="pronostico-form">
+        
+        <div class="form-group">
+          <label for="partita">Seleziona la Partita *</label>
+          <select id="partita" required>
+            <option value="" disabled selected>Caricamento partite...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="segno">Chi vincerà? (Segno 1X2) *</label>
+          <select id="segno" required>
+            <option value="" disabled selected>-- Scegli il segno --</option>
+            <option value="1">1 (Vittoria in Casa)</option>
+            <option value="X">X (Pareggio)</option>
+            <option value="2">2 (Vittoria in Trasferta)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Risultato Esatto (90' min) *</label>
+          <div class="score-inputs">
+            <input type="number" id="gol-casa" min="0" placeholder="0" required>
+            <span>-</span>
+            <input type="number" id="gol-trasferta" min="0" placeholder="0" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="marcatori">Marcatori <span class="optional-badge">(Facoltativo)</span></label>
+          <input type="text" id="marcatori" placeholder="Es. Barella, Chiesa, Neymar...">
+          <small style="color: #666; font-size: 0.8em;">Separa i nomi con una virgola. Lascia vuoto se pensi finisca 0-0.</small>
+        </div>
+
+        <button type="submit">Salva Pronostico</button>
+      </form>
+      
+    </div>
+  </main>
+
+  <script type="module" src="pronostico.js"></script>  
+</body>
 </html>

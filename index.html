@@ -1,12 +1,186 @@
 <!DOCTYPE html>
-<html lang="">
-  <head>
-    <meta charset="utf-8">
-    <title></title>
-  </head>
-  <body>
-    <header></header>
-    <main></main>
-    <footer></footer>
-  </body>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Fanta Mondiali - Home</title>
+  <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* Stile strutturale di base (lo potrai spostare in style.css quando vorrai) */
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f7f6;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #ddd;
+      margin-bottom: 30px;
+    }
+    .btn-pronostico {
+      padding: 12px 24px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+    .btn-pronostico:hover {
+      background-color: #0056b3;
+    }
+    
+    /* Layout a due colonne: flessibile e modulare */
+    .main-layout {
+      display: flex;
+      flex-wrap: wrap; /* Rende il sito responsive (si adatta ai telefoni) */
+      gap: 30px;
+    }
+    
+    /* Colonna Sinistra (Match) - Prende più spazio */
+    .left-column {
+      flex: 2;
+      min-width: 300px;
+    }
+    
+    /* Colonna Destra (Classifica) - Più stretta */
+    .right-column {
+      flex: 1;
+      min-width: 250px;
+    }
+    
+    /* Stile dei blocchi/card per futura espandibilità */
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    
+    /* Tabella Classifica */
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .leaderboard-table th, .leaderboard-table td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    .leaderboard-table th {
+      background-color: #f8f9fa;
+    }
+    .player-link {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .player-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Lista Match */
+    .match-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .match-date {
+      color: #666;
+      font-size: 0.9em;
+    }
+    .badge-live { background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; }
+    .badge-past { background: #6c757d; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🏆 Fanta Mondiali tra Amici</h1>
+    <a href="login.html" class="btn-pronostico">Fai Pronostico ➡️</a>
+  </header>
+
+  <main class="main-layout">
+    
+    <section class="left-column">
+      
+      <div class="card">
+        <h2>📅 Prossimi Match</h2>
+        <div id="upcoming-matches">
+          
+          <div class="match-item">
+            <span>🇮🇹 Italia vs 🇧🇷 Brasile</span>
+            <span class="match-date">Venerdì ore 21:00</span>
+          </div>
+          
+          <div class="match-item">
+            <span>🇫🇷 Francia vs 🇦🇷 Argentina</span>
+            <span class="match-date">Sabato ore 18:00</span>
+          </div>
+          </div>
+      </div>
+      
+      <div class="card">
+        <h2>✅ Match Passati & Risultati</h2>
+        <div id="past-matches">
+          
+          <div class="match-item">
+            <span>🇪🇸 Spagna <b>2 - 1</b> 🇩🇪 Germania</span>
+            <span class="badge-past">Finale</span>
+          </div>
+          
+          <div class="match-item">
+            <span>🇬🇧 Inghilterra <b>0 - 0</b> 🇭🇷 Croazia</span>
+            <span class="badge-past">Finale</span>
+          </div>
+          </div>
+      </div>
+      
+    </section>
+    
+    <section class="right-column">
+      <div class="card">
+        <h2>📊 Classifica</h2>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Pos.</th>
+              <th>Giocatore</th>
+              <th>Punti</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body">
+            <tr>
+              <td>1</td>
+              <td><a href="giocatore.html?nome=marco" class="player-link">Marco</a></td>
+              <td><b>15</b></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><a href="giocatore.html?nome=giulia" class="player-link">Giulia</a></td>
+              <td><b>12</b></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td><a href="giocatore.html?nome=luca" class="player-link">Luca</a></td>
+              <td><b>9</b></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      </section>
+
+  </main>
+
+  <footer>
+    <p style="text-align: center; color: #888; margin-top: 50px; font-size: 0.9em;">Progetto Personale Mondiali © 2026</p>
+  </footer>
+<script type="module" src="index.js"></script>
+</body>
 </html>
