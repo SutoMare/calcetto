@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Dettaglio Partita - Fanta Mondiali</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Stili aggiuntivi specifici per questa pagina */
+    .match-header-info {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .match-header-info h2 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    .match-result-box {
+      background-color: var(--bg-color, #f8f9fa);
+      padding: 15px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-top: 10px;
+      border: 1px solid var(--border-color, #eee);
+    }
+    .action-container {
+      text-align: center;
+      margin-top: 40px;
+      display: none; /* Nascosto di default, lo mostra JS se la partita è aperta */
+    }
+    .btn-large {
+      font-size: 1.2rem;
+      padding: 15px 40px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🔍 Dettaglio Partita</h1>
+    <a href="index.html" class="btn-pronostico">⬅️ Torna alla Home</a>
+  </header>
+
+  <main>
+    <!-- Riquadro Info Partita -->
+    <section class="card match-header-info">
+      <h2 id="match-title">Caricamento partita...</h2>
+      <div id="match-status-container"></div>
+    </section>
+
+    <!-- Tabella dei Pronostici -->
+    <section class="card">
+      <h2>📋 Pronostici dei Giocatori</h2>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Giocatore</th>
+            <th>Il suo Pronostico</th>
+            <th id="th-punti" style="display: none; text-align: center;">Punti Fatti</th>
+          </tr>
+        </thead>
+        <tbody id="predictions-body">
+          <tr><td colspan="3" style="text-align: center;">Caricamento in corso...</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Bottone per Scommettere (Visibile solo se NON finita) -->
+    <div id="action-container" class="action-container">
+      <a href="login.html" class="btn-pronostico btn-large">Fai il tuo Pronostico! 🎯</a>
+    </div>
+
+  </main>
+
+  <script type="module" src="partita.js"></script>
+</body>
+</html>

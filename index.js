@@ -85,7 +85,9 @@ async function caricaPartite() {
       } else {
         // SE LA PARTITA NON È FINITA -> Va nei "Prossimi Match" e mostriamo l'orario
         divPartita.innerHTML = `
-          <span>${partita.squadra_casa} vs ${partita.squadra_trasferta}</span>
+        <a href="partita.html?id=${partita.id}" style="text-decoration: none; color: inherit;">
+          <strong>${partita.squadra_casa} vs ${partita.squadra_trasferta}</strong>
+        </a>
           <span class="match-date">${partita.data_orario || 'Data da definire'}</span>
         `;
         upcomingMatches.appendChild(divPartita);
