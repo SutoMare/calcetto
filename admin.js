@@ -43,22 +43,30 @@ btnCalcola.addEventListener('click', async () => {
       let segnoPronostico = pronostico.segno ? pronostico.segno.trim().toUpperCase() : '';
       let segnoReale = partita.segno_reale ? partita.segno_reale.trim().toUpperCase() : '';
 
+      // --- REGOLA 1: SEGNO ESATTO ---
       if (segnoPronostico === segnoReale) puntiGiocata += 1;
 
-      let segnoImplicato = 'X';
-      if (pGolCasa > pGolTrasf) segnoImplicato = '1';
-      else if (pGolCasa < pGolTrasf) segnoImplicato = '2';
+      // --- REGOLA 2: RISULTATO E COERENZA (Mondiale No-Pareggio) ---
+      let coerente = false;
+      
+      if (pGolCasa > pGolTrasf && segnoPronostico === '1') {
+        coerente = true; // Vittoria in casa
+      } else if (pGolCasa < pGolTrasf && segnoPronostico === '2') {
+        coerente = true; // Vittoria in trasferta
+      } else if (pGolCasa === pGolTrasf && (segnoPronostico === '1' || segnoPronostico === '2')) {
+        coerente = true; // Pareggio ai supplementari, ma il segno indica chi vince ai rigori!
+      }
 
-      let coerente = (segnoPronostico === segnoImplicato);
       let risultatoEsatto = (pGolCasa === rGolCasa && pGolTrasf === rGolTrasf);
 
+      // Assegna il +2 solo se ha beccato i gol E la logica ha senso
       if (risultatoEsatto && coerente) {
         puntiGiocata += 2;
       }
 
       let puntiBase = puntiGiocata; 
 
-      // 2. MARCATORI
+      // --- REGOLA 3: MARCATORI ---
       let predMarcatori = pronostico.marcatori ? pronostico.marcatori.split(',').map(m => m.trim().toLowerCase()).filter(m => m !== '') : [];
       let realiMarcatori = partita.marcatori_reali ? partita.marcatori_reali.toLowerCase() : "";
       
@@ -79,10 +87,11 @@ btnCalcola.addEventListener('click', async () => {
       
       puntiGiocata += puntiMarcatori; 
 
-      // --- 🚨 LO SCANNER CORRETTO 🚨 ---
+      // --- LO SCANNER ---
       log(`<span style="color:#17a2b8;">--- PRONOSTICO GIOCATORE ID: ${pronostico.giocatore_id} ---</span>`);
       log(`GOL SCRITTI: <b>${pGolCasa} - ${pGolTrasf}</b> (Segno: ${segnoPronostico})`);
       log(`GOL REALI:  <b>${rGolCasa} - ${rGolTrasf}</b> (Segno: ${segnoReale})`);
+      log(`> Coerente? <b>${coerente ? 'SI' : 'NO'}</b>`);
       log(`> Punti ottenuti da Segno+Risultato: <b>${puntiBase}</b>`);
       log(`MARCATORI SCRITTI: <b>${predMarcatori.length > 0 ? predMarcatori.join(', ') : 'Nessuno'}</b>`);
       log(`MARCATORI REALI: <b>${realiMarcatori || 'Nessuno'}</b>`);
