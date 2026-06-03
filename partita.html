@@ -5,33 +5,22 @@
   <title>Dettaglio Partita - Fanta Mondiali</title>
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Stili aggiuntivi specifici per questa pagina */
-    .match-header-info {
-      text-align: center;
-      padding: 20px 0;
+    .match-header-info { text-align: center; padding: 20px 0; }
+    .match-header-info h2 { font-size: 2rem; margin-bottom: 10px; }
+    .match-result-box { 
+      background-color: var(--bg-color, #f8f9fa); 
+      padding: 15px; 
+      border-radius: 8px; 
+      display: inline-block; 
+      margin-top: 10px; 
+      border: 1px solid var(--border-color, #eee); 
     }
-    .match-header-info h2 {
-      font-size: 2rem;
-      margin-bottom: 10px;
-    }
-    .match-result-box {
-      background-color: var(--bg-color, #f8f9fa);
-      padding: 15px;
-      border-radius: 8px;
-      display: inline-block;
-      margin-top: 10px;
-      border: 1px solid var(--border-color, #eee);
-    }
-    .action-container {
-      text-align: center;
-      margin-top: 40px;
-      display: none; /* Nascosto di default, lo mostra JS se la partita è aperta */
-    }
-    .btn-large {
-      font-size: 1.2rem;
-      padding: 15px 40px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
+    .action-container { text-align: center; margin-top: 40px; display: none; }
+    .btn-large { font-size: 1.2rem; padding: 15px 40px; }
+    
+    /* Centriamo i testi della tabella per renderla più ordinata */
+    .leaderboard-table th, .leaderboard-table td { text-align: center; vertical-align: middle; }
+    .leaderboard-table th:first-child, .leaderboard-table td:first-child { text-align: left; } /* Teniamo il nome a sinistra */
   </style>
 </head>
 <body>
@@ -42,30 +31,33 @@
   </header>
 
   <main>
-    <!-- Riquadro Info Partita -->
     <section class="card match-header-info">
       <h2 id="match-title">Caricamento partita...</h2>
       <div id="match-status-container"></div>
     </section>
 
-    <!-- Tabella dei Pronostici -->
     <section class="card">
       <h2>📋 Pronostici dei Giocatori</h2>
-      <table class="leaderboard-table">
-        <thead>
-          <tr>
-            <th>Giocatore</th>
-            <th>Il suo Pronostico</th>
-            <th id="th-punti" style="display: none; text-align: center;">Punti Fatti</th>
-          </tr>
-        </thead>
-        <tbody id="predictions-body">
-          <tr><td colspan="3" style="text-align: center;">Caricamento in corso...</td></tr>
-        </tbody>
-      </table>
+      
+      <div style="overflow-x: auto;">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Utente</th>
+              <th>Vincitore</th>
+              <th>Risultato</th>
+              <th>Marcatori</th>
+              <!-- Nascosta di default, si accende se la partita è finita -->
+              <th id="th-punti" style="display: none;">Punti Totali</th>
+            </tr>
+          </thead>
+          <tbody id="predictions-body">
+            <tr><td colspan="5" style="text-align: center; padding: 20px;">Caricamento in corso...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
-    <!-- Bottone per Scommettere (Visibile solo se NON finita) -->
     <div id="action-container" class="action-container">
       <a href="login.html" class="btn-pronostico btn-large">Fai il tuo Pronostico! 🎯</a>
     </div>
