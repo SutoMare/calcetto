@@ -78,6 +78,7 @@
       color: #007bff;
       text-decoration: none;
       font-weight: bold;
+      text-transform: capitalize;
     }
     .player-link:hover {
       text-decoration: underline;
@@ -96,6 +97,22 @@
     }
     .badge-live { background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; }
     .badge-past { background: #6c757d; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; }
+
+    /* --- NUOVO STILE PER IL BOTTONE ADMIN --- */
+    .btn-admin-link {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 6px 12px;
+      background-color: #6c757d;
+      color: white;
+      text-decoration: none;
+      font-size: 0.8em;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    .btn-admin-link:hover {
+      background-color: #495057;
+    }
   </style>
 </head>
 <body>
@@ -111,34 +128,16 @@
       
       <div class="card">
         <h2>📅 Prossimi Match</h2>
+        <!-- Svuotato: i dati veri li carica index.js -->
         <div id="upcoming-matches">
-          
-          <div class="match-item">
-            <span>🇮🇹 Italia vs 🇧🇷 Brasile</span>
-            <span class="match-date">Venerdì ore 21:00</span>
-          </div>
-          
-          <div class="match-item">
-            <span>🇫🇷 Francia vs 🇦🇷 Argentina</span>
-            <span class="match-date">Sabato ore 18:00</span>
-          </div>
-          </div>
+        </div>
       </div>
       
       <div class="card">
         <h2>✅ Match Passati & Risultati</h2>
+        <!-- Svuotato: i dati veri li carica index.js -->
         <div id="past-matches">
-          
-          <div class="match-item">
-            <span>🇪🇸 Spagna <b>2 - 1</b> 🇩🇪 Germania</span>
-            <span class="badge-past">Finale</span>
-          </div>
-          
-          <div class="match-item">
-            <span>🇬🇧 Inghilterra <b>0 - 0</b> 🇭🇷 Croazia</span>
-            <span class="badge-past">Finale</span>
-          </div>
-          </div>
+        </div>
       </div>
       
     </section>
@@ -154,22 +153,8 @@
               <th>Punti</th>
             </tr>
           </thead>
+          <!-- Svuotato: i dati veri li carica index.js -->
           <tbody id="leaderboard-body">
-            <tr>
-              <td>1</td>
-              <td><a href="giocatore.html?nome=marco" class="player-link">Marco</a></td>
-              <td><b>15</b></td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td><a href="giocatore.html?nome=giulia" class="player-link">Giulia</a></td>
-              <td><b>12</b></td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td><a href="giocatore.html?nome=luca" class="player-link">Luca</a></td>
-              <td><b>9</b></td>
-            </tr>
           </tbody>
         </table>
       </div>
@@ -180,7 +165,12 @@
 
   <footer>
     <p style="text-align: center; color: #888; margin-top: 50px; font-size: 0.9em;">Progetto Personale Mondiali © 2026</p>
+    <!-- NUOVO BOTTONE ADMIN -->
+    <div style="text-align: center;">
+      <a href="admin.html" class="btn-admin-link">Aggiorna risultati</a>
+    </div>
   </footer>
+
 <script type="module" src="index.js"></script>
 </body>
 </html>
