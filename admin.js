@@ -3,7 +3,6 @@ import { supabase } from './config.js';
 const btnCalcola = document.getElementById('btn-calcola');
 const logArea = document.getElementById('log-area');
 
-// Funzione per scrivere a schermo i log in stile "Hacker"
 function log(messaggio) {
   logArea.innerHTML += `> ${messaggio}<br>`;
 }
@@ -13,40 +12,44 @@ btnCalcola.addEventListener('click', async () => {
   logArea.innerHTML = '> INIZIO CALCOLO PUNTEGGI...<br>';
 
   try {
-    // 1. Scarichiamo tutte le partite che sono state segnate come "finite" su Supabase
     const { data: partiteFinite, error: errPartite } = await supabase.from('partite').select('*').eq('finita', true);
     if (errPartite) throw errPartite;
     
-    // Mettiamole in un dizionario per trovarle subito
     const mappaPartite = {};
     partiteFinite.forEach(p => mappaPartite[p.id] = p);
 
-    // 2. Scarichiamo TUTTI i pronostici
     const { data: pronostici, error: errPronostici } = await supabase.from('pronostici').select('*');
     if (errPronostici) throw errPronostici;
 
-    // Variabile per tenere traccia dei punti totali da dare a ciascun giocatore
     const puntiPerGiocatore = {}; 
     log(`Trovate ${partiteFinite.length} partite concluse e ${pronostici.length} pronostici nel DB.`);
 
-    // 3. IL CUORE DEL SISTEMA: Analizziamo ogni singolo pronostico
     for (let pronostico of pronostici) {
       const partita = mappaPartite[pronostico.partita_id];
       
-      // Assicuriamoci che ogni giocatore parta da 0 punti nel nostro calcolo
       if (!puntiPerGiocatore[pronostico.giocatore_id]) {
         puntiPerGiocatore[pronostico.giocatore_id] = 0;
       }
 
-      // Se la partita relativa al pronostico non è ancora finita, non diamo punti e saltiamo
       if (!partita) continue;
 
       let puntiGiocata = 0;
 
+      // --- 🛡️ SISTEMA ANTI-BUG SUI TIPI DI DATO ---
+      // Forziamo i gol a essere Numeri (risolve il problema Testo vs Numero di Supabase)
+      let pGolCasa = Number(pronostico.gol_casa);
+      let pGolTrasf = Number(pronostico.gol_trasferta);
+      let rGolCasa = Number(partita.gol_casa);
+      let rGolTrasf = Number(partita.gol_trasferta);
+      
+      // Puliamo i segni da spazi invisibili e li facciamo sempre MAIUSCOLI (es. 'x' diventa 'X')
+      let segnoPronostico = pronostico.segno ? pronostico.segno.trim().toUpperCase() : '';
+      let segnoReale = partita.segno_reale ? partita.segno_reale.trim().toUpperCase() : '';
+
       // ----------------------------------------------------
       // REGOLA 1: SEGNO ESATTO (+1 pt)
       // ----------------------------------------------------
-      if (pronostico.segno === partita.segno_reale) {
+      if (segnoPronostico === segnoReale) {
         puntiGiocata += 1;
       }
 
@@ -55,13 +58,12 @@ btnCalcola.addEventListener('click', async () => {
       // ----------------------------------------------------
       // Che segno implicava il punteggio inserito dall'utente?
       let segnoImplicato = 'X';
-      if (pronostico.gol_casa > pronostico.gol_trasferta) segnoImplicato = '1';
-      else if (pronostico.gol_casa < pronostico.gol_trasferta) segnoImplicato = '2';
+      if (pGolCasa > pGolTrasf) segnoImplicato = '1';
+      else if (pGolCasa < pGolTrasf) segnoImplicato = '2';
 
-      let coerente = (pronostico.segno === segnoImplicato);
-      let risultatoEsatto = (pronostico.gol_casa === partita.gol_casa && pronostico.gol_trasferta === partita.gol_trasferta);
+      let coerente = (segnoPronostico === segnoImplicato);
+      let risultatoEsatto = (pGolCasa === rGolCasa && pGolTrasf === rGolTrasf);
 
-      // Come hai richiesto: prendi i punti SOLO se hai azzeccato il risultato esatto E sei stato coerente
       if (risultatoEsatto && coerente) {
         puntiGiocata += 2;
       }
@@ -69,42 +71,39 @@ btnCalcola.addEventListener('click', async () => {
       // ----------------------------------------------------
       // REGOLA 3: MARCATORI (TUTTO O NIENTE: +2, +3, +4...)
       // ----------------------------------------------------
-      // Puliamo i testi: rimuoviamo gli spazi vuoti e mettiamo tutto minuscolo
       let predMarcatori = pronostico.marcatori ? pronostico.marcatori.split(',').map(m => m.trim().toLowerCase()).filter(m => m !== '') : [];
       let realiMarcatori = partita.marcatori_reali ? partita.marcatori_reali.toLowerCase() : "";
 
       if (predMarcatori.length > 0) {
         let tuttiAzzeccati = true;
-        
-        // Controlliamo che OGNI marcatore previsto sia contenuto nella lista dei marcatori reali
         for (let marcatore of predMarcatori) {
           if (!realiMarcatori.includes(marcatore)) {
             tuttiAzzeccati = false;
-            break; // Sbagliato uno, persi tutti! (Tutto o niente)
+            break; 
           }
         }
 
         if (tuttiAzzeccati) {
-          // Assegniamo i punti a salire: il 1° vale 2, il 2° vale 3, il 3° vale 4...
           for (let i = 0; i < predMarcatori.length; i++) {
             puntiGiocata += (i + 2); 
           }
         }
       }
 
-      // Salviamo i punti guadagnati per questa singola partita su Supabase
+      // ----------------------------------------------------
+      // SALVATAGGIO IN SUPABASE
+      // ----------------------------------------------------
       await supabase
         .from('pronostici')
         .update({ punti_guadagnati: puntiGiocata })
         .eq('giocatore_id', pronostico.giocatore_id)
         .eq('partita_id', pronostico.partita_id);
 
-      // Aggiungiamo i punti al "Sacco" totale di questo giocatore
       puntiPerGiocatore[pronostico.giocatore_id] += puntiGiocata;
     }
     log('Aggiornamento singole scommesse completato.');
 
-    // 4. AGGIORNIAMO LA CLASSIFICA GENERALE (Tabella Giocatori)
+    // Ricalcolo classifica generale
     log('Ricalcolo classifica generale in corso...');
     const { data: giocatori } = await supabase.from('giocatori').select('id');
     
@@ -114,13 +113,11 @@ btnCalcola.addEventListener('click', async () => {
     }
 
     log('✅ TUTTO FATTO! Classifica aggiornata con successo.');
-    log('Puoi tornare al sito e controllare i risultati.');
 
   } catch (error) {
     console.error(error);
     log('❌ ERRORE: ' + error.message);
   } finally {
-    // Riattiviamo il bottone
     btnCalcola.disabled = false;
   }
 });
