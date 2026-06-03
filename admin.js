@@ -34,6 +34,7 @@ btnCalcola.addEventListener('click', async () => {
 
       let puntiGiocata = 0;
 
+      // 1. GOL e SEGNI
       let pGolCasa = Number(pronostico.gol_casa);
       let pGolTrasf = Number(pronostico.gol_trasferta);
       let rGolCasa = Number(partita.gol_casa);
@@ -42,10 +43,8 @@ btnCalcola.addEventListener('click', async () => {
       let segnoPronostico = pronostico.segno ? pronostico.segno.trim().toUpperCase() : '';
       let segnoReale = partita.segno_reale ? partita.segno_reale.trim().toUpperCase() : '';
 
-      // REGOLA 1: SEGNO
       if (segnoPronostico === segnoReale) puntiGiocata += 1;
 
-      // REGOLA 2: RISULTATO
       let segnoImplicato = 'X';
       if (pGolCasa > pGolTrasf) segnoImplicato = '1';
       else if (pGolCasa < pGolTrasf) segnoImplicato = '2';
@@ -57,33 +56,41 @@ btnCalcola.addEventListener('click', async () => {
         puntiGiocata += 2;
       }
 
-      // REGOLA 3: MARCATORI
+      let puntiBase = puntiGiocata; 
+
+      // 2. MARCATORI
       let predMarcatori = pronostico.marcatori ? pronostico.marcatori.split(',').map(m => m.trim().toLowerCase()).filter(m => m !== '') : [];
       let realiMarcatori = partita.marcatori_reali ? partita.marcatori_reali.toLowerCase() : "";
+      
+      let puntiMarcatori = 0;
+      let tuttiAzzeccati = false;
 
       if (predMarcatori.length > 0) {
-        let tuttiAzzeccati = true;
+        tuttiAzzeccati = true;
         for (let marcatore of predMarcatori) {
           if (!realiMarcatori.includes(marcatore)) {
             tuttiAzzeccati = false; break; 
           }
         }
         if (tuttiAzzeccati) {
-          for (let i = 0; i < predMarcatori.length; i++) puntiGiocata += (i + 2); 
+          for (let i = 0; i < predMarcatori.length; i++) puntiMarcatori += (i + 2); 
         }
       }
+      
+      puntiGiocata += puntiMarcatori; 
 
-      // --- 🚨 LO SCANNER (Stampa a schermo per noi) 🚨 ---
-      log(`<span style="color:#17a2b8;">--- ANALISI PRONOSTICO ---</span>`);
-      log(`Giocatore ID: ${pronostico.giocatore_id.substring(0, 5)}... | Partita: ${partita.id}`);
-      log(`GOL SCRITTI DA LUI: <b>${pGolCasa} - ${pGolTrasf}</b>`);
-      log(`GOL REALI PARTITA:  <b>${rGolCasa} - ${rGolTrasf}</b>`);
-      log(`Risultati identici? <b>${risultatoEsatto ? 'SI' : 'NO'}</b>`);
-      log(`Segno coerente? <b>${coerente ? 'SI' : 'NO'}</b>`);
-      log(`Punti finali assegnati: <b>${puntiGiocata}</b>`);
+      // --- 🚨 LO SCANNER CORRETTO 🚨 ---
+      log(`<span style="color:#17a2b8;">--- PRONOSTICO GIOCATORE ID: ${pronostico.giocatore_id} ---</span>`);
+      log(`GOL SCRITTI: <b>${pGolCasa} - ${pGolTrasf}</b> (Segno: ${segnoPronostico})`);
+      log(`GOL REALI:  <b>${rGolCasa} - ${rGolTrasf}</b> (Segno: ${segnoReale})`);
+      log(`> Punti ottenuti da Segno+Risultato: <b>${puntiBase}</b>`);
+      log(`MARCATORI SCRITTI: <b>${predMarcatori.length > 0 ? predMarcatori.join(', ') : 'Nessuno'}</b>`);
+      log(`MARCATORI REALI: <b>${realiMarcatori || 'Nessuno'}</b>`);
+      log(`> Punti ottenuti dai Marcatori: <b>${puntiMarcatori}</b>`);
+      log(`<b>PUNTI TOTALI ASSEGNATI: ${puntiGiocata}</b>`);
       log(`--------------------------`);
 
-      // Salvataggio
+      // 3. Salvataggio
       await supabase.from('pronostici').update({ punti_guadagnati: puntiGiocata }).eq('giocatore_id', pronostico.giocatore_id).eq('partita_id', pronostico.partita_id);
 
       puntiPerGiocatore[pronostico.giocatore_id] += puntiGiocata;
@@ -94,7 +101,7 @@ btnCalcola.addEventListener('click', async () => {
       let totale = puntiPerGiocatore[giocatore.id] || 0;
       await supabase.from('giocatori').update({ punteggio_totale: totale }).eq('id', giocatore.id);
     }
-    log('✅ Classifica aggiornata.');
+    log('✅ Classifica aggiornata con successo.');
 
   } catch (error) {
     log('❌ ERRORE: ' + error.message);
