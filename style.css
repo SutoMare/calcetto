@@ -1,29 +1,36 @@
- /* =========================================================================
-   FANTA MONDIALI - STEROID EDITION (1994)
+/* =========================================================================
+   FANTA MONDIALI - STILE MODERNO E PULITO
    ========================================================================= */
+
+/* --- VARIABILI COLORI E STILE --- */
+:root {
+  --primary-color: #2563eb; /* Blu moderno */
+  --primary-hover: #1d4ed8;
+  --bg-color: #f8fafc; /* Grigio chiarissimo di sfondo */
+  --card-bg: #ffffff; /* Sfondo bianco per i blocchi */
+  --text-main: #1e293b; /* Grigio scuro/ardesia per il testo */
+  --text-muted: #64748b; /* Grigio più chiaro per date e info secondarie */
+  --border-color: #e2e8f0; /* Bordi leggeri */
+  --success: #10b981; /* Verde smeraldo per i punti guadagnati */
+  --success-bg: #d1fae5;
+  --danger: #ef4444;  /* Rosso per errori/live */
+  --warning: #f59e0b; /* Arancione per i "in attesa" */
+}
 
 /* --- IMPOSTAZIONI GLOBALI --- */
 body {
-  font-family: 'Impact', 'Arial Black', sans-serif;
-  background-color: #000000;
-  background-image: repeating-linear-gradient(
-    45deg,
-    #111 0,
-    #111 20px,
-    #000 20px,
-    #000 40px
-  );
-  color: #ffffff;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
   margin: 0;
   padding: 20px;
-  text-transform: uppercase; /* URLA SEMPRE */
-  letter-spacing: 1px;
+  line-height: 1.6;
 }
 
 h1, h2, h3 {
+  color: var(--text-main);
   margin-top: 0;
-  text-shadow: 4px 4px 0px #ff0000; /* Ombra rosso sangue */
-  letter-spacing: 2px;
+  font-weight: 700;
 }
 
 /* --- HEADER E TITOLI --- */
@@ -31,60 +38,62 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  background: #ff0000;
-  background: linear-gradient(180deg, #ff0000 0%, #8b0000 100%);
-  border: 5px solid #ffff00;
-  box-shadow: 10px 10px 0px #ffff00;
-  margin-bottom: 40px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 30px;
 }
 
 header h1 {
-  color: #ffff00;
-  text-shadow: 3px 3px 0px #000;
-  font-size: 2.5rem;
+  font-size: 2rem;
   margin: 0;
-  font-style: italic;
+  letter-spacing: -0.02em;
 }
 
-/* --- I BOTTONI (I DETONATORI) --- */
+/* --- I BOTTONI --- */
 button, .btn-pronostico, .btn-admin, input[type="submit"] {
   display: inline-block;
-  background-color: #39ff14; /* Verde tossico */
-  color: #000;
-  font-family: 'Impact', sans-serif;
-  font-size: 20px;
-  padding: 15px 30px;
+  background-color: var(--primary-color);
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 24px;
   text-decoration: none;
-  border: 4px solid #ffffff;
-  box-shadow: 6px 6px 0px #ff00ff; /* Neon magenta */
-  cursor: crosshair; /* Il cursore diventa un mirino! */
-  transition: all 0.1s ease-in-out;
-  text-transform: uppercase;
+  border: none;
+  border-radius: 8px; /* Angoli dolci */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
 }
 
-/* Animazione del testosterone al passaggio del mouse */
 button:hover, .btn-pronostico:hover, .btn-admin:hover, input[type="submit"]:hover {
-  background-color: #ff00ff;
-  color: #fff;
-  border-color: #ffff00;
-  box-shadow: 8px 8px 0px #39ff14;
-  transform: scale(1.05) rotate(-2deg); /* Si ingrandisce e si inclina rabbiosamente */
+  background-color: var(--primary-hover);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+  transform: translateY(-1px); /* Si alza leggermente al passaggio del mouse */
+}
+
+button:disabled {
+  background-color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* --- I BLOCCHI (LE CARTE) --- */
 .card, .admin-card, .login-container {
-  background-color: #1a1a1a;
-  padding: 20px;
-  border: 5px solid #00ffff; /* Ciano fluo */
-  box-shadow: 12px 12px 0px #ff0000;
-  margin-bottom: 30px;
+  background-color: var(--card-bg);
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Ombra morbida moderna */
+  margin-bottom: 24px;
 }
 
 .card h2 {
-  color: #00ffff;
-  border-bottom: 4px dashed #ff0000;
-  padding-bottom: 10px;
+  font-size: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 /* --- LISTA PARTITE --- */
@@ -92,160 +101,169 @@ button:hover, .btn-pronostico:hover, .btn-admin:hover, input[type="submit"]:hove
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 10px;
-  border-bottom: 2px solid #333;
-  font-size: 1.2rem;
-  background-color: #000;
-  margin-bottom: 5px;
-  border-left: 5px solid #ff0000;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 1rem;
 }
 
-.match-item:hover {
-  background-color: #222;
-  border-left: 15px solid #39ff14;
-  transition: 0.2s;
+.match-item:last-child {
+  border-bottom: none;
 }
 
 .match-date {
-  color: #ffff00;
-  font-family: 'Courier New', monospace; /* Stile computer anni 90 */
-  font-size: 1rem;
-  font-weight: bold;
+  color: var(--text-muted);
+  font-size: 0.875rem;
 }
 
 /* --- TABELLA CLASSIFICA --- */
 .leaderboard-table {
   width: 100%;
-  border-collapse: separate; /* Permette i bordi fighi */
-  border-spacing: 0 5px;
+  border-collapse: collapse;
+  margin-top: 10px;
 }
 
 .leaderboard-table th {
-  background-color: #ff00ff;
-  color: #fff;
-  padding: 15px;
-  font-size: 1.3rem;
-  border: 3px solid #fff;
+  background-color: var(--bg-color);
+  color: var(--text-muted);
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--border-color);
+  text-align: left;
 }
 
 .leaderboard-table td {
-  background-color: #000;
-  color: #fff;
-  padding: 12px;
-  border-top: 3px solid #39ff14;
-  border-bottom: 3px solid #39ff14;
-  font-size: 1.2rem;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
 }
 
-.leaderboard-table tr td:first-child { border-left: 3px solid #39ff14; }
-.leaderboard-table tr td:last-child { border-right: 3px solid #39ff14; color: #ffff00; font-size: 1.5rem; }
+.leaderboard-table tr:hover td {
+  background-color: var(--bg-color); /* Effetto hover sulle righe */
+}
 
 .player-link {
-  color: #00ffff;
+  color: var(--primary-color);
   text-decoration: none;
-  font-style: italic;
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
 .player-link:hover {
-  color: #ff0000;
   text-decoration: underline;
 }
 
 /* --- PAGINA LOGIN E PROFILI --- */
 .profile-pic {
-  width: 80px;
-  height: 80px;
-  border-radius: 0; /* NESSUN CERCHIO, SOLO MASCELLA QUADRATA */
+  width: 60px;
+  height: 60px;
+  border-radius: 50%; /* Cerchio perfetto */
   object-fit: cover;
-  border: 4px solid #ffff00;
-  box-shadow: 4px 4px 0px #ff00ff;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .user-selection {
-  background: #000;
-  padding: 15px;
-  border: 3px dashed #39ff14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
   margin-bottom: 20px;
+  padding: 15px;
+  background: var(--bg-color);
+  border-radius: 12px;
 }
 
 input[type="password"], input[type="number"], select, input[type="text"] {
-  background-color: #000;
-  color: #39ff14;
-  border: 3px solid #ff00ff;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--card-bg);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   padding: 12px;
-  font-family: 'Courier New', monospace;
-  font-weight: bold;
-  font-size: 18px;
-  text-transform: uppercase;
+  font-family: inherit;
+  font-size: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 10px;
 }
 
 input:focus, select:focus {
   outline: none;
-  background-color: #222;
-  border-color: #ffff00;
-  box-shadow: 0 0 10px #ffff00;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); /* Anello azzurro al focus */
 }
 
-/* --- BADGE PUNTI (PER LA PAGINA GIOCATORE E INDEX) --- */
+/* --- BADGE PUNTI E STATI --- */
 .badge-live, .badge-past {
-  font-family: 'Impact', sans-serif;
-  padding: 5px 10px;
-  border: 2px solid #000;
-  font-size: 1rem;
+  padding: 4px 10px;
+  border-radius: 9999px; /* Forma a "pillola" */
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.badge-live { background: #ff0000; color: #fff; animation: blink 1s infinite; }
-.badge-past { background: #555; color: #ccc; }
+.badge-live { background: #fee2e2; color: var(--danger); }
+.badge-past { background: var(--border-color); color: var(--text-muted); }
 
 .point-badge {
-  background-color: #39ff14;
-  color: #000;
-  padding: 2px 6px;
-  border: 2px solid #fff;
-  font-size: 1rem;
+  background-color: var(--success-bg);
+  color: var(--success);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
   display: inline-block;
-  margin-left: 5px;
-  transform: rotate(-5deg); /* Etichetta stile fumetto */
+  margin-left: 8px;
 }
 
 .no-points {
-  color: #ff0000;
-  font-size: 0.9rem;
-  margin-left: 5px;
-  text-decoration: line-through;
+  color: var(--danger);
+  font-size: 0.85rem;
+  margin-left: 8px;
 }
 
 .pred-detail {
-  margin: 5px 0;
-  font-family: 'Courier New', Courier, monospace;
-  font-weight: bold;
+  margin: 4px 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
 }
 
-/* --- ANIMAZIONI --- */
-@keyframes blink {
-  0% { opacity: 1; }
-  50% { opacity: 0; }
-  100% { opacity: 1; }
+/* --- PUNTI TOTALI TABELLA STORICO --- */
+.total-points-cell {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-align: center;
+  vertical-align: middle;
 }
 
 /* --- FOOTER --- */
 footer {
-  border-top: 5px dashed #ffff00;
+  border-top: 1px solid var(--border-color);
   padding-top: 20px;
   margin-top: 50px;
+  text-align: center;
 }
 
 .btn-admin-link {
-  background-color: #000;
-  color: #ff0000;
-  border: 2px solid #ff0000;
-  padding: 5px 10px;
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: var(--bg-color);
+  color: var(--text-muted);
   text-decoration: none;
-  font-family: 'Courier New', monospace;
-  font-weight: bold;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s;
 }
 
 .btn-admin-link:hover {
-  background-color: #ff0000;
-  color: #000;
+  background-color: var(--border-color);
+  color: var(--text-main);
 }
