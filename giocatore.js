@@ -39,19 +39,17 @@ async function caricaStoricoGiocatore() {
       .from('pronostici')
       .select('*')
       .eq('giocatore_id', giocatoreData.id)
-      .order('created_at', { ascending: false }); // Dal più recente al più vecchio
+      .order('created_at', { ascending: false }); 
 
     if (pronosticiError) throw pronosticiError;
 
-    // 4. Chiediamo TUTTE le partite dal database per poter confrontare i risultati!
+    // 4. Chiediamo TUTTE le partite dal database
     const { data: partite, error: partiteError } = await supabase
       .from('partite')
       .select('*');
 
     if (partiteError) throw partiteError;
 
-    // Trasformiamo l'array delle partite in un oggetto "dizionario" per comodità
-    // (Così sarà facilissimo trovare la partita giusta usando il suo ID)
     const mappaPartite = {};
     if (partite) {
       partite.forEach(p => {
@@ -59,7 +57,6 @@ async function caricaStoricoGiocatore() {
       });
     }
 
-    // Svuotiamo la tabella per inserire i dati veri
     storicoBody.innerHTML = '';
 
     if (!pronostici || pronostici.length === 0) {
@@ -69,44 +66,95 @@ async function caricaStoricoGiocatore() {
 
     // 5. Creiamo le righe della tabella per ogni pronostico
     pronostici.forEach(pronostico => {
-      
-      // Prendiamo i dati reali della partita dal database (se esiste)
       const partita = mappaPartite[pronostico.partita_id];
-      if (!partita) return; // Se la partita è stata cancellata dal DB, saltiamo la riga
+      if (!partita) return; 
 
       const nomePartita = `⚽ ${partita.squadra_casa} vs ${partita.squadra_trasferta}`;
       const tr = document.createElement('tr');
       const risultatoPronosticato = `${pronostico.gol_casa}-${pronostico.gol_trasferta}`;
       const marcatori = pronostico.marcatori ? pronostico.marcatori : "Nessuno";
 
-      // Logica visiva per i punti (Mostriamo quanti punti ha fatto solo se è finita)
       let puntiHTML = '';
-      if (partita.finita) {
-         puntiHTML = pronostico.punti_guadagnati > 0 
-            ? `<td class="total-points-cell">${pronostico.punti_guadagnati}</td>` 
-            : `<td class="total-points-cell" style="color: #999;">0</td>`;
-      } else {
-         puntiHTML = `<td class="total-points-cell" style="color: #f39c12; font-size: 1em;">In attesa</td>`;
-      }
-
-      // Costruiamo la colonna del risultato reale pescando i dati dal database
       let risultatoRealeHTML = '';
+      
+      // Variabili per i BADGE che aggiungeremo in parte al pronostico
+      let badgeSegno = '';
+      let badgeRisultato = '';
+      let badgeMarcatori = '';
+
       if (partita.finita) {
+        // ---- CALCOLO DEI BADGE VISIVI (Stessa logica dell'Admin) ----
+        let pGolCasa = Number(pronostico.gol_casa);
+        let pGolTrasf = Number(pronostico.gol_trasferta);
+        let rGolCasa = Number(partita.gol_casa);
+        let rGolTrasf = Number(partita.gol_trasferta);
+        
+        let segnoPronostico = pronostico.segno ? pronostico.segno.trim().toUpperCase() : '';
+        let segnoReale = partita.segno_reale ? partita.segno_reale.trim().toUpperCase() : '';
+
+        // Badge Segno
+        if (segnoPronostico === segnoReale) {
+          badgeSegno = ' <span class="point-badge">+1 pt</span>';
+        } else {
+          badgeSegno = ' <span class="no-points">(errato)</span>';
+        }
+
+        // Badge Risultato Esatto + Coerenza
+        let coerente = false;
+        if (pGolCasa > pGolTrasf && segnoPronostico === '1') coerente = true;
+        else if (pGolCasa < pGolTrasf && segnoPronostico === '2') coerente = true;
+        else if (pGolCasa === pGolTrasf && (segnoPronostico === '1' || segnoPronostico === '2')) coerente = true;
+
+        let risultatoEsatto = (pGolCasa === rGolCasa && pGolTrasf === rGolTrasf);
+
+        if (risultatoEsatto && coerente) {
+          badgeRisultato = ' <span class="point-badge">+2 pt</span>';
+        } else {
+          badgeRisultato = ' <span class="no-points">(errato)</span>';
+        }
+
+        // Badge Marcatori
+        let predMarcatori = pronostico.marcatori ? pronostico.marcatori.split(',').map(m => m.trim().toLowerCase()).filter(m => m !== '') : [];
+        let realiMarcatori = partita.marcatori_reali ? partita.marcatori_reali.toLowerCase() : "";
+        
+        if (predMarcatori.length > 0) {
+          let tuttiAzzeccati = true;
+          for (let marcatore of predMarcatori) {
+            if (!realiMarcatori.includes(marcatore)) {
+              tuttiAzzeccati = false; break; 
+            }
+          }
+          if (tuttiAzzeccati) {
+            let puntiMarcatori = 0;
+            for (let i = 0; i < predMarcatori.length; i++) puntiMarcatori += (i + 2); 
+            badgeMarcatori = ` <span class="point-badge">+${puntiMarcatori} pt</span>`;
+          } else {
+            badgeMarcatori = ' <span class="no-points">(errato)</span>';
+          }
+        }
+
+        // ---- CREAZIONE DELLE CELLE PER LE PARTITE FINITE ----
+        puntiHTML = pronostico.punti_guadagnati > 0 
+           ? `<td class="total-points-cell">${pronostico.punti_guadagnati}</td>` 
+           : `<td class="total-points-cell" style="color: #999;">0</td>`;
+
         risultatoRealeHTML = `
           <div class="pred-detail">Segno: ${partita.segno_reale || '?'}</div>
           <div class="pred-detail">Risultato: ${partita.gol_casa !== null ? partita.gol_casa : '?'}-${partita.gol_trasferta !== null ? partita.gol_trasferta : '?'}</div>
           <div class="pred-detail">Marcatori: ${partita.marcatori_reali || 'Nessuno'}</div>
         `;
       } else {
+        // Se la partita non è finita, non mostriamo badge né punti
+        puntiHTML = `<td class="total-points-cell" style="color: #f39c12; font-size: 1em;">In attesa</td>`;
         risultatoRealeHTML = `<div class="pred-detail" style="color:#888;">Partita da giocare</div>`;
       }
 
       tr.innerHTML = `
         <td><strong>${nomePartita}</strong></td>
         <td>
-          <div class="pred-detail">Segno: ${pronostico.segno}</div>
-          <div class="pred-detail">Risultato: ${risultatoPronosticato}</div>
-          <div class="pred-detail">Marcatori: ${marcatori}</div>
+          <div class="pred-detail">Segno: ${pronostico.segno}${badgeSegno}</div>
+          <div class="pred-detail">Risultato: ${risultatoPronosticato}${badgeRisultato}</div>
+          <div class="pred-detail">Marcatori: ${marcatori}${badgeMarcatori}</div>
         </td>
         <td>${risultatoRealeHTML}</td>
         ${puntiHTML}
