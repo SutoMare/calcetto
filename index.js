@@ -64,8 +64,8 @@ async function caricaClassifica() {
     });
 
   } catch (error) {
-    console.error("Errore nel caricamento della classifica:", error.message);
-    leaderboardBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">Errore di caricamento classifica</td></tr>';
+    console.error("Errore nel caricamento dello storico:", error.message);
+    storicoBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Errore nel caricamento dei dati</td></tr>';
   }
 }
 
