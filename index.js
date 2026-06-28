@@ -1,64 +1,32 @@
-// Importiamo la connessione a Supabase
-import { supabase } from './config.js';
+// VARIABILI DI STATO GLOBALI (servono a gestire il bottone "Mostra altri")
+let prossimePartiteGlobali = []; // Salverà l'elenco completo ordinato delle prossime partite
+let mostraTutteLeProssime = false; // Stato per capire se la lista è espansa o ridotta
 
-// --- 1. FUNZIONE PER CARICARE LA CLASSIFICA ---
-async function caricaClassifica() {
-  const leaderboardBody = document.getElementById('leaderboard-body');
-
-  try {
-    const { data: giocatori, error } = await supabase
-      .from('giocatori')
-      .select('nome, punteggio_totale')
-      .order('punteggio_totale', { ascending: false });
-
-    if (error) throw error;
-
-    leaderboardBody.innerHTML = '';
-
-    if (!giocatori || giocatori.length === 0) {
-      leaderboardBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nessun giocatore registrato</td></tr>';
-      return;
-    }
-
-    giocatori.forEach((giocatore, index) => {
-      const posizione = index + 1; 
-      const tr = document.createElement('tr');
-      
-      tr.innerHTML = `
-        <td>${posizione}</td>
-        <td>
-          <a href="giocatore.html?nome=${giocatore.nome.toLowerCase()}" class="player-link" style="text-transform: capitalize;">
-            ${giocatore.nome}
-          </a>
-        </td>
-        <td><b>${giocatore.punteggio_totale}</b></td>
-      `;
-      
-      leaderboardBody.appendChild(tr);
-    });
-
-  } catch (error) {
-    console.error("Errore nel caricamento della classifica:", error.message);
-    leaderboardBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">Errore di caricamento classifica</td></tr>';
-  }
+// --- FUNZIONE AUSILIARIA: Converte la stringa "GG/MM/AAAA HH:MM" in un oggetto Date di JS
+function convertiInDataJS(stringaData) {
+  if (!stringaData) return new Date(8640000000000000); // Se non c'è data, la mette in fondo al futuro
+  
+  const [data, orario] = stringaData.split(' ');
+  const [giorno, mese, anno] = data.split('/');
+  const [ora, minuto] = orario.split(':');
+  
+  // I mesi in JavaScript partono da 0 (Gennaio = 0, Giugno = 5, ecc.)
+  return new Date(anno, mese - 1, giorno, ora, minuto);
 }
 
-// --- 2. FUNZIONE PER CARICARE LE PARTITE ---
+// --- 2. FUNZIONE PER CARICARE LE PARTITE (AGGIORNATA) ---
 async function caricaPartite() {
-  // Selezioniamo i due contenitori HTML per le partite
   const upcomingMatches = document.getElementById('upcoming-matches');
   const pastMatches = document.getElementById('past-matches');
 
   try {
-    // Chiediamo a Supabase TUTTE le partite
+    // 1. Chiediamo a Supabase tutte le partite
     const { data: partite, error } = await supabase
       .from('partite')
-      .select('*')
-      .order('id', { ascending: true }); // Le ordiniamo per ID, ma potrai cambiare l'ordine in futuro se vorrai
+      .select('*');
 
     if (error) throw error;
 
-    // Svuotiamo i dati finti scritti a mano in index.html
     upcomingMatches.innerHTML = '';
     pastMatches.innerHTML = '';
 
@@ -68,31 +36,29 @@ async function caricaPartite() {
       return;
     }
 
-    // Dividiamo le partite nei due blocchi
-    partite.forEach(partita => {
-      // Creiamo il div base per la singola partita
+    // 2. Separiamo subito i match passati da quelli futuri
+    const passate = partite.filter(p => p.finita === true);
+    const future = partite.filter(p => p.finita !== true);
+
+    // 3. ORDINAMENTO PER DATA: Ordiniamo le prossime partite (dalla più vicina alla più lontana)
+    future.sort((a, b) => convertiInDataJS(a.data_orario) - convertiInDataJS(b.data_orario));
+
+    // Salivamo la lista ordinata nella variabile globale per riutilizzarla al click del bottone
+    prossimePartiteGlobali = future;
+
+    // 4. Rendering dei MATCH PASSATI (rimane invariato)
+    passate.forEach(partita => {
       const divPartita = document.createElement('div');
       divPartita.className = 'match-item';
-
-      if (partita.finita === true) {
-        // SE LA PARTITA È FINITA -> Va nei "Match Passati" e mostriamo il risultato
-        divPartita.innerHTML = `
-          <span>${partita.squadra_casa} <b>${partita.gol_casa} - ${partita.gol_trasferta}</b> ${partita.squadra_trasferta}</span>
-          <span class="badge-past">Finita</span>
-        `;
-        pastMatches.appendChild(divPartita);
-
-      } else {
-        // SE LA PARTITA NON È FINITA -> Va nei "Prossimi Match" e mostriamo l'orario
-        divPartita.innerHTML = `
-        <a href="partita.html?id=${partita.id}" style="text-decoration: none; color: inherit;">
-          <strong>${partita.squadra_casa} vs ${partita.squadra_trasferta}</strong>
-        </a>
-          <span class="match-date">${partita.data_orario || 'Data da definire'}</span>
-        `;
-        upcomingMatches.appendChild(divPartita);
-      }
+      divPartita.innerHTML = `
+        <span>${partita.squadra_casa} <b>${partita.gol_casa} - ${partita.gol_trasferta}</b> ${partita.squadra_trasferta}</span>
+        <span class="badge-past">Finita</span>
+      `;
+      pastMatches.appendChild(divPartita);
     });
+
+    // 5. Rendering dei PROSSIMI MATCH (con logica del limite a 5)
+    renderProssimiMatch();
 
   } catch (error) {
     console.error("Errore nel caricamento delle partite:", error.message);
@@ -101,7 +67,59 @@ async function caricaPartite() {
   }
 }
 
-// --- 3. AVVIO DELLE FUNZIONI ---
-// Appena il file viene caricato dal browser, facciamo partire entrambe le funzioni in parallelo
-caricaClassifica();
-caricaPartite();
+// --- NUOVA FUNZIONE: Disegna la lista dei prossimi match (tagliata a 5 o completa)
+function renderProssimiMatch() {
+  const upcomingMatches = document.getElementById('upcoming-matches');
+  upcomingMatches.innerHTML = ''; // Svuota il contenitore
+
+  if (prossimePartiteGlobali.length === 0) {
+    upcomingMatches.innerHTML = '<p style="color: #666; padding: 10px 0;">Nessuna partita in programma.</p>';
+    return;
+  }
+
+  // Se 'mostraTutteLeProssime' è false prendiamo solo le prime 5, altrimenti tutte
+  const partiteDaMostrare = mostraTutteLeProssime 
+    ? prossimePartiteGlobali 
+    : prossimePartiteGlobali.slice(0, 5);
+
+  // Stampiamo le partite filtrate
+  partiteDaMostrare.forEach(partita => {
+    const divPartita = document.createElement('div');
+    divPartita.className = 'match-item';
+    divPartita.innerHTML = `
+      <a href="partita.html?id=${partita.id}" style="text-decoration: none; color: inherit;">
+        <strong>${partita.squadra_casa} vs ${partita.squadra_trasferta}</strong>
+      </a>
+      <span class="match-date">${partita.data_orario || 'Data da definire'}</span>
+    `;
+    upcomingMatches.appendChild(divPartita);
+  });
+
+  // Se ci sono più di 5 partite in totale, aggiungiamo il pulsante di espansione/riduzione
+  if (prossimePartiteGlobali.length > 5) {
+    const btnToggle = document.createElement('button');
+    btnToggle.style.cssText = `
+      display: block;
+      width: 100%;
+      margin-top: 15px;
+      padding: 8px;
+      background-color: #f0f2f5;
+      color: #007bff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    `;
+    
+    // Cambiamo il testo del bottone a seconda dello stato
+    btnToggle.innerText = mostraTutteLeProssime ? "⬆️ Mostra Meno" : `⬇️ Mostra Altri (${prossimePartiteGlobali.length - 5})`;
+    
+    // Gestore dell'evento click sul bottone
+    btnToggle.onclick = () => {
+      mostraTutteLeProssime = !mostraTutteLeProssime; // Inverte lo stato
+      renderProssimiMatch(); // Ridibuja solo la sezione dei prossimi match
+    };
+    
+    upcomingMatches.appendChild(btnToggle);
+  }
+}
