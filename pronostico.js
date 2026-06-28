@@ -13,16 +13,26 @@ if (!utenteCorrente) {
   // Se c'è, mostriamo il suo nome nel banner dell'HTML
   document.getElementById('nome-utente-display').textContent = utenteCorrente;
 }
+// --- FUNZIONE AUSILIARIA: Converte la stringa "GG/MM/AAAA HH:MM" in un oggetto Date di JS
+function convertiInDataJS(stringaData) {
+  if (!stringaData) return new Date(8640000000000000); // Se manca la data, la sposta in fondo al futuro
+  
+  const [data, orario] = stringaData.split(' ');
+  const [giorno, mese, anno] = data.split('/');
+  const [ora, minuto] = orario.split(':');
+  
+  return new Date(anno, mese - 1, giorno, ora, minuto);
+}
 
-// --- CARICAMENTO DELLE PARTITE NEL MENU A TENDINA ---
+// --- CARICAMENTO DELLE PARTITE NEL MENU A TENDINA (AGGIORNATA) ---
 async function caricaPartiteDisponibili() {
   const selectPartita = document.getElementById('partita');
 
   try {
-    // Chiediamo a Supabase SOLO le partite non ancora finite
+    // Chiediamo a Supabase SOLO le partite non ancora finite, prendendo anche la data_orario
     const { data: partite, error } = await supabase
       .from('partite')
-      .select('id, squadra_casa, squadra_trasferta')
+      .select('id, squadra_casa, squadra_trasferta, data_orario') // <-- Aggiunto data_orario qui
       .eq('finita', false);
 
     if (error) throw error;
@@ -40,11 +50,20 @@ async function caricaPartiteDisponibili() {
       return;
     }
 
-    // Aggiungiamo le opzioni dinamicamente
+    // 🔥 ORDINAMENTO: Ordiniamo l'array delle partite dalla più vicina alla più lontana
+    partite.sort((a, b) => convertiInDataJS(a.data_orario) - convertiInDataJS(b.data_orario));
+
+    // Aggiungiamo le opzioni dinamicamente inserendo anche Giorno e Ora nel testo visibile
     partite.forEach(partita => {
       const option = document.createElement('option');
-      option.value = partita.id; // L'id della partita (es. 'ita-bra')
-      option.textContent = `⚽ ${partita.squadra_casa} vs ${partita.squadra_trasferta}`;
+      option.value = partita.id; 
+      
+      // Recuperiamo la data o mostriamo un testo di fallback se non è inserita
+      const infoData = partita.data_orario ? `(${partita.data_orario})` : '(Data da definire)';
+      
+      // Il testo combinerà l'emoji, le squadre e la data completa
+      option.textContent = `⚽ ${partita.squadra_casa} vs ${partita.squadra_trasferta}   ${infoData}`;
+      
       selectPartita.appendChild(option);
     });
 
