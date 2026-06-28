@@ -23,12 +23,21 @@ async function caricaStoricoGiocatore() {
 
   try {
     // 2. Troviamo il giocatore su Supabase per avere il suo ID e Punteggio Totale
+
     const { data: giocatoreData, error: giocatoreError } = await supabase
       .from('giocatori')
       .select('id, punteggio_totale')
-      .eq('nome', nomeGiocatore)
-      .single();
+      .ilike('nome', nomeGiocatore) // <-- MODIFICATO QUI
+      .maybeSingle(); // <-- MODIFICATO ANCHE QUI (Evita il crash se il giocatore non esiste proprio)
 
+    if (giocatoreError) throw giocatoreError;
+
+    // Se il giocatore non esiste proprio nel database, gestiamo l'errore con grazia
+    if (!giocatoreData) {
+      document.getElementById('nome-giocatore').textContent = "Giocatore non trovato";
+      storicoBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:orange;">Questo giocatore non esiste nel database.</td></tr>';
+      return;
+    }
     if (giocatoreError) throw giocatoreError;
 
     // Aggiorniamo il punteggio totale in alto nella pagina
