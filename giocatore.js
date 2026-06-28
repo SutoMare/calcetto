@@ -164,8 +164,8 @@ async function caricaStoricoGiocatore() {
     });
 
   } catch (error) {
-    console.error("Errore nel caricamento dello storico:", error.message);
-    storicoBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Errore nel caricamento dei dati</td></tr>';
+    console.error("DEBUG STORICO:", error); // <-- CAMBIA QUESTO
+    storicoBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Errore: ${error.message || error}</td></tr>`;
   }
 }
 
