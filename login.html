@@ -87,8 +87,7 @@
     // 2. Diciamo al browser: "Ogni volta che il menu a tendina cambia, esegui questa funzione"
     userSelect.addEventListener('change', function() {
       // Prendi il valore selezionato (es. 'marco')
-      const selectedUser = userSelect.value;
-      
+      const selectedUser = userSelect.value.toLowerCase();      
       // Cambia il percorso dell'immagine aggiungendo '.jpg'
       userIcon.src = selectedUser + '.jpg';
       
