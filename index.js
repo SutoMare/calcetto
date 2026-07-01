@@ -158,7 +158,7 @@ function renderProssimiMatch() {
   if (prossimePartiteGlobali.length > 5) {
     const btnToggle = document.createElement('button');
     btnToggle.style.cssText = "display:block; width:100%; margin-top:15px; padding:8px; background-color:#f0f2f5; color:#007bff; border:1px solid #ddd; border-radius:4px; font-weight:bold; cursor:pointer;";
-    btnToggle.innerText = mostraTutteLeProssime ? "⬆️ Mostra Meno" : `⬇️ Mostra Altri (${prossimePartiteGlobali.length - 5})`;
+    btnToggle.innerText = mostraTutteLeProssime ? "Mostra Meno" : ` Mostra Altri (${prossimePartiteGlobali.length - 5})`;
     
     btnToggle.onclick = () => {
       mostraTutteLeProssime = !mostraTutteLeProssime;

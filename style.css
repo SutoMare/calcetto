@@ -6,19 +6,19 @@
 
 /* --- VARIABILI COLORI E STILE --- */
 :root {
-  --primary-color: #6366f1;      /* Indaco moderno */
-  --primary-hover: #818cf8;
-  --primary-glow: rgba(99, 102, 241, 0.35);
+  --primary-color: #d26f68;      /* Indaco moderno */
+  --primary-hover: #f1968f;
+  --primary-glow: rgba(241, 99, 161, 0.35);
 
-  --bg-color: #0a0e17;           /* Sfondo quasi nero, con leggera tinta blu */
+  --bg-color: #2e252e;           /* Sfondo quasi nero, con leggera tinta blu */
   --bg-color-alt: #0d1220;
-  --card-bg: #141a2b;            /* Sfondo dei blocchi/card */
-  --card-bg-alt: #1a2138;        /* Sfondo secondario (header tabelle, hover) */
+  --card-bg: #303440;            /* Sfondo dei blocchi/card */
+  --card-bg-alt: #3b3f4a;        /* Sfondo secondario (header tabelle, hover) */
 
-  --text-main: #e6e9f2;          /* Testo principale chiaro */
+  --text-main: #f4d6d5;          /* Testo principale chiaro */
   --text-muted: #8891a8;         /* Testo secondario grigio-blu */
 
-  --border-color: #262e45;       /* Bordi sottili */
+  --border-color: #606676;       /* Bordi sottili */
   --border-color-light: #333d5c;
 
   --success: #34d399;            /* Verde smeraldo */
@@ -41,7 +41,7 @@
 
 /* --- IMPOSTAZIONI GLOBALI --- */
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'IBM Plex Mono', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--bg-color);
   background-image:
     radial-gradient(circle at 15% 0%, rgba(99, 102, 241, 0.08), transparent 40%),
@@ -90,7 +90,7 @@ header h1 {
 .main-layout {
   display: flex;
   flex-wrap: wrap;
-  gap: 30px;
+  gap: 15px;
 }
 
 .left-column {
@@ -356,15 +356,15 @@ button:disabled {
 }
 
 .profile-pic {
-  width: 60px;
-  height: 60px;
+  width: 100px;
+  height: 100px;
   border: 2px solid var(--border-color);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .profile-pic-large {
-  width: 80px;
-  height: 80px;
+  width: 130px;
+  height: 130px;
   border: 3px solid var(--primary-color);
 }
 
