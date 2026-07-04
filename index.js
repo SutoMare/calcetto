@@ -228,6 +228,67 @@ function renderPartitePassate() {
   }
 }
 
+// --- 5. FUNZIONE PER CARICARE I VINCITORI DI OGNI TURNO ---
+async function caricaVincitoriTurni() {
+  const roundWinnersBody = document.getElementById('round-winners-body');
+  if (!roundWinnersBody) return;
+
+  // Elenco dei turni: colonna nel DB + etichetta da mostrare.
+  const turni = [
+    { colonna: 'r16_score', etichetta: 'Sedicesimi' },
+    { colonna: 'r8_score', etichetta: 'Ottavi' },
+    { colonna: 'r4_score', etichetta: 'Quarti/Semifinale' },
+    { colonna: 'final_score', etichetta: 'Finale' },
+  ];
+
+  try {
+    const { data: giocatori, error } = await supabase
+      .from('giocatori')
+      .select('nome, r16_score, r8_score, r4_score, final_score');
+
+    if (error) throw error;
+
+    roundWinnersBody.innerHTML = '';
+
+    if (!giocatori || giocatori.length === 0) {
+      roundWinnersBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nessun dato disponibile</td></tr>';
+      return;
+    }
+
+    turni.forEach(turno => {
+      // Troviamo il punteggio massimo per questo turno tra tutti i giocatori.
+      let punteggioMax = -Infinity;
+      giocatori.forEach(g => {
+        const val = Number(g[turno.colonna]) || 0;
+        if (val > punteggioMax) punteggioMax = val;
+      });
+
+      // Tutti i giocatori che hanno raggiunto quel massimo (gestisce i pari merito).
+      const vincitori = giocatori
+        .filter(g => (Number(g[turno.colonna]) || 0) === punteggioMax)
+        .map(g => g.nome);
+
+      const tr = document.createElement('tr');
+      const nomiVincitori = punteggioMax <= 0 || vincitori.length === 0
+        ? '—'
+        : vincitori.map(n => `<span style="text-transform: capitalize;">${n}</span>`).join(', ');
+
+      tr.innerHTML = `
+        <td>${turno.etichetta}</td>
+        <td>${nomiVincitori}</td>
+        <td><b>${punteggioMax > -Infinity ? punteggioMax : 0}</b></td>
+      `;
+
+      roundWinnersBody.appendChild(tr);
+    });
+
+  } catch (error) {
+    console.error("Errore nel caricamento dei vincitori per turno:", error.message);
+    roundWinnersBody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:red;">Errore nel caricamento dei dati</td></tr>';
+  }
+}
+
 // --- AVVIO ---
 caricaClassifica();
 caricaPartite();
+caricaVincitoriTurni();
