@@ -7,6 +7,21 @@ console.log("DEBUG: index.js caricato correttamente!");
 let prossimePartiteGlobali = []; 
 let mostraTutteLeProssime = false; 
 
+// --- INTERVALLO DEL TURNO ATTUALMENTE IN CORSO ---
+// Le partite con data_orario precedente a INIZIO_TURNO_CORRENTE appartengono
+// a un turno già concluso e "congelato" in una delle colonne dedicate
+// (r16_score, r8_score, r4_score, final_score) e quindi non
+// devono più comparire nelle tabelle qui sotto.
+// Aggiorna queste due date a mano a ogni cambio di turno.
+const INIZIO_TURNO_CORRENTE = new Date(2026, 6, 4, 12, 0);  // placeholder
+const FINE_TURNO_CORRENTE   = new Date(2026, 6, 8, 23, 59); // placeholder (qui non usata per il filtro delle tabelle, tenuta per coerenza con admin.js)
+
+// --- COLONNA DEL TURNO ATTUALMENTE IN CORSO ---
+// Deve essere IDENTICA a quella impostata in admin.js: una tra
+// 'r16_score', 'r8_score', 'r4_score', 'final_score'. Serve per sapere quale
+// colonna leggere e mostrare come "punti turno corrente" in classifica.
+const COLONNA_TURNO_CORRENTE = 'r8_score'; // placeholder
+
 // --- FUNZIONE AUSILIARIA PER LE DATE ---
 function convertiInDataJS(stringaData) {
   if (!stringaData) return new Date(8640000000000000); 
@@ -34,7 +49,7 @@ async function caricaClassifica() {
   try {
     const { data: giocatori, error } = await supabase
       .from('giocatori')
-      .select('nome, punteggio_totale')
+      .select(`nome, punteggio_totale, ${COLONNA_TURNO_CORRENTE}`)
       .order('punteggio_totale', { ascending: false });
 
     if (error) throw error;
@@ -42,13 +57,14 @@ async function caricaClassifica() {
     leaderboardBody.innerHTML = '';
 
     if (!giocatori || giocatori.length === 0) {
-      leaderboardBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nessun giocatore registrato</td></tr>';
+      leaderboardBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nessun giocatore registrato</td></tr>';
       return;
     }
 
     giocatori.forEach((giocatore, index) => {
       const posizione = index + 1; 
       const tr = document.createElement('tr');
+      const puntiTurno = giocatore[COLONNA_TURNO_CORRENTE] ?? 0;
       
       tr.innerHTML = `
         <td>${posizione}</td>
@@ -58,14 +74,15 @@ async function caricaClassifica() {
           </a>
         </td>
         <td><b>${giocatore.punteggio_totale}</b></td>
+        <td>${puntiTurno}</td>
       `;
       
       leaderboardBody.appendChild(tr);
     });
 
   } catch (error) {
-    console.error("Errore nel caricamento dello storico:", error.message);
-    storicoBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Errore nel caricamento dei dati</td></tr>';
+    console.error("Errore nel caricamento della classifica:", error.message);
+    leaderboardBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Errore nel caricamento dei dati</td></tr>';
   }
 }
 
@@ -98,9 +115,13 @@ async function caricaPartite() {
       return;
     }
 
+    // Ignoriamo le partite dei turni già conclusi (precedenti all'inizio del
+    // turno corrente): non vanno mostrate né tra le prossime né tra le passate.
+    const partiteRilevanti = partite.filter(p => convertiInDataJS(p.data_orario) >= INIZIO_TURNO_CORRENTE);
+
     // Separiamo i match
-    const passate = partite.filter(p => p.finita === true);
-    const future = partite.filter(p => p.finita !== true);
+    const passate = partiteRilevanti.filter(p => p.finita === true);
+    const future = partiteRilevanti.filter(p => p.finita !== true);
 
     // Ordiniamo le future
     future.sort((a, b) => convertiInDataJS(a.data_orario) - convertiInDataJS(b.data_orario));

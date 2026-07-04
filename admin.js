@@ -7,14 +7,59 @@ function log(messaggio) {
   logArea.innerHTML += `> ${messaggio}<br>`;
 }
 
+// --- INTERVALLO DEL TURNO ATTUALMENTE IN CORSO ---
+// Le partite con data_orario al di fuori di questo intervallo appartengono a
+// un turno già concluso (i cui punti sono stati congelati a mano in una delle
+// colonne dedicate: r16_score, r8_score, r4_score, final_score) o
+// a un turno futuro non ancora iniziato, e vanno quindi ignorate nel calcolo
+// del punteggio del turno corrente.
+// Aggiorna queste due date a mano a ogni cambio di turno.
+const INIZIO_TURNO_CORRENTE = new Date(2026, 6, 4, 12, 0);  // placeholder
+const FINE_TURNO_CORRENTE   = new Date(2026, 6, 8, 23, 59); // placeholder
+
+// --- COLONNA DEL TURNO ATTUALMENTE IN CORSO ---
+// Deve essere una tra: 'r16_score', 'r8_score', 'r4_score', 'final_score'.
+// È la colonna in cui viene scritto il punteggio live (non diviso) delle
+// partite che cadono nell'intervallo di date qui sopra. Aggiornala a mano
+// insieme alle due date ogni volta che si passa al turno successivo: il
+// valore lasciato nella colonna del turno precedente resta così "congelato".
+const COLONNA_TURNO_CORRENTE = 'r8_score'; // placeholder
+
+function convertiInDataJS(stringaData) {
+  if (!stringaData) return new Date(8640000000000000);
+  try {
+    const parti = stringaData.split(' ');
+    if (parti.length < 2) return new Date(8640000000000000);
+    const [data, orario] = parti;
+    const [giorno, mese, anno] = data.split('/');
+    const [ora, minuto] = orario.split(':');
+    return new Date(anno, mese - 1, giorno, ora, minuto);
+  } catch (e) {
+    console.error("Errore parsing data per stringa:", stringaData, e);
+    return new Date(8640000000000000);
+  }
+}
+
 btnCalcola.addEventListener('click', async () => {
   btnCalcola.disabled = true;
   logArea.innerHTML = '> INIZIO CALCOLO PUNTEGGI...<br>';
 
   try {
-    const { data: partiteFinite, error: errPartite } = await supabase.from('partite').select('*').eq('finita', true);
+    const { data: partiteFiniteRaw, error: errPartite } = await supabase.from('partite').select('*').eq('finita', true);
     if (errPartite) throw errPartite;
-    
+
+    // Consideriamo solo le partite del turno corrente: quelle di turni
+    // precedenti sono già congelate a mano nelle colonne dedicate, quelle di
+    // turni futuri non devono ancora contare.
+    const partiteFinite = partiteFiniteRaw.filter(p => {
+      const d = convertiInDataJS(p.data_orario);
+      return d >= INIZIO_TURNO_CORRENTE && d <= FINE_TURNO_CORRENTE;
+    });
+    const partiteEscluse = partiteFiniteRaw.length - partiteFinite.length;
+    if (partiteEscluse > 0) {
+      log(`ℹ️ Ignorate ${partiteEscluse} partite fuori dall'intervallo del turno corrente (già congelate o non ancora in corso).`);
+    }
+
     const mappaPartite = {};
     partiteFinite.forEach(p => mappaPartite[p.id] = p);
 
@@ -31,6 +76,21 @@ btnCalcola.addEventListener('click', async () => {
       }
 
       if (!partita) continue;
+
+      // --- REGOLA 0: PRONOSTICO FUORI TEMPO MASSIMO ---
+      // Se il pronostico è stato salvato quando la partita era già iniziata
+      // (o comunque dopo l'orario di inizio), non deve valere nulla.
+      const orarioPartita = convertiInDataJS(partita.data_orario);
+      const orarioPronostico = pronostico.created_at ? new Date(pronostico.created_at) : null;
+
+      if (orarioPronostico && orarioPronostico >= orarioPartita) {
+        log(`<span style="color:#e74c3c;">--- PRONOSTICO GIOCATORE ID: ${pronostico.giocatore_id} ---</span>`);
+        log(`⛔ Pronostico inviato alle ${orarioPronostico.toLocaleString('it-IT')}, ma la partita iniziava alle ${orarioPartita.toLocaleString('it-IT')} → 0 punti (fuori tempo massimo).`);
+        log(`--------------------------`);
+
+        await supabase.from('pronostici').update({ punti_guadagnati: 0 }).eq('giocatore_id', pronostico.giocatore_id).eq('partita_id', pronostico.partita_id);
+        continue;
+      }
 
       let puntiGiocata = 0;
 
@@ -105,10 +165,41 @@ btnCalcola.addEventListener('click', async () => {
       puntiPerGiocatore[pronostico.giocatore_id] += puntiGiocata;
     }
 
-    const { data: giocatori } = await supabase.from('giocatori').select('id');
+    // puntiPerGiocatore contiene, a questo punto, il punteggio del SOLO
+    // turno corrente (non diviso). Questo valore va scritto direttamente
+    // nella colonna del turno attivo (COLONNA_TURNO_CORRENTE), sovrascrivendo
+    // quanto c'era prima: è il modo in cui il punteggio del turno in corso
+    // resta sempre aggiornato finché non si passa al turno successivo.
+    const { data: giocatori, error: errGiocatori } = await supabase
+      .from('giocatori')
+      .select('id, r16_score, r8_score, r4_score, final_score');
+    if (errGiocatori) throw errGiocatori;
+
     for (let giocatore of giocatori) {
-      let totale = puntiPerGiocatore[giocatore.id] || 0;
-      await supabase.from('giocatori').update({ punteggio_totale: totale }).eq('id', giocatore.id);
+      // --- PUNTEGGIO TURNO CORRENTE (visibile, non diviso) ---
+      let puntiTurnoCorrente = puntiPerGiocatore[giocatore.id] || 0;
+
+      // Valori grezzi delle 4 colonne, con quella del turno corrente
+      // sovrascritta dal valore live appena calcolato.
+      let raw = {
+        r16_score: Number(giocatore.r16_score) || 0,
+        r8_score: Number(giocatore.r8_score) || 0,
+        r4_score: Number(giocatore.r4_score) || 0,
+        final_score: Number(giocatore.final_score) || 0,
+      };
+      raw[COLONNA_TURNO_CORRENTE] = puntiTurnoCorrente;
+
+      // --- PUNTEGGIO TOTALE ---
+      // Nota: se un punteggio di turno è 0 (o non ancora impostato), la
+      // divisione non crea alcun problema: 0 diviso per qualsiasi cosa resta 0.
+      let puntiTotali = (raw.r16_score / 4) + (raw.r8_score / 2) + raw.r4_score + (raw.final_score * 2);
+
+      await supabase.from('giocatori').update({
+        [COLONNA_TURNO_CORRENTE]: puntiTurnoCorrente,
+        punteggio_totale: puntiTotali
+      }).eq('id', giocatore.id);
+
+      log(`Giocatore ID ${giocatore.id}: ${COLONNA_TURNO_CORRENTE} (turno corrente) = ${puntiTurnoCorrente} | totale = ${puntiTotali}`);
     }
     log('✅ Classifica aggiornata con successo.');
 

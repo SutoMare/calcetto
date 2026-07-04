@@ -94,13 +94,13 @@ header h1 {
 }
 
 .left-column {
-  flex: 2;
+  flex: 1.5;
   min-width: 300px;
 }
 
 .right-column {
-  flex: 1;
-  min-width: 250px;
+  flex: 1.3;
+  min-width: 280px;
 }
 
 /* --- I BOTTONI --- */
@@ -207,6 +207,15 @@ button:disabled {
   overflow-x: auto;
 }
 
+.leaderboard-table-container {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.leaderboard-table-container .leaderboard-table {
+  margin-top: 0;
+}
+
 /* --- TOP NAV / LINK DI RITORNO (pagine secondarie) --- */
 .page-top-nav {
   margin-bottom: 30px;
@@ -305,6 +314,28 @@ button:disabled {
   letter-spacing: 0.05em;
   border-bottom: 2px solid var(--border-color);
   text-align: left;
+}
+
+.leaderboard-table th {
+  padding: 12px 8px;
+  white-space: nowrap;
+}
+
+.leaderboard-table td {
+  padding: 14px 8px;
+}
+
+.leaderboard-table th:first-child,
+.leaderboard-table td:first-child {
+  padding-left: 12px;
+}
+
+.leaderboard-table th:last-child,
+.leaderboard-table td:last-child,
+.leaderboard-table th:nth-last-child(2),
+.leaderboard-table td:nth-last-child(2) {
+  text-align: center;
+  white-space: nowrap;
 }
 
 .leaderboard-table td,
