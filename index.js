@@ -6,6 +6,8 @@ console.log("DEBUG: index.js caricato correttamente!");
 // VARIABILI DI STATO GLOBALI
 let prossimePartiteGlobali = []; 
 let mostraTutteLeProssime = false; 
+let partitePassateGlobali = [];
+let mostraTutteLePassate = false;
 
 // --- INTERVALLO DEL TURNO ATTUALMENTE IN CORSO ---
 // Le partite con data_orario precedente a INIZIO_TURNO_CORRENTE appartengono
@@ -115,28 +117,22 @@ async function caricaPartite() {
       return;
     }
 
-    // Ignoriamo le partite dei turni già conclusi (precedenti all'inizio del
-    // turno corrente): non vanno mostrate né tra le prossime né tra le passate.
-    const partiteRilevanti = partite.filter(p => convertiInDataJS(p.data_orario) >= INIZIO_TURNO_CORRENTE);
+    // Le partite passate si mostrano SEMPRE tutte, anche quelle di turni
+    // precedenti: la soglia del turno corrente si applica solo alle prossime,
+    // per non far ricomparire tra le "upcoming" partite di un turno già finito.
+    const passate = partite.filter(p => p.finita === true);
+    const future = partite.filter(p => p.finita !== true && convertiInDataJS(p.data_orario) >= INIZIO_TURNO_CORRENTE);
 
-    // Separiamo i match
-    const passate = partiteRilevanti.filter(p => p.finita === true);
-    const future = partiteRilevanti.filter(p => p.finita !== true);
+    // Ordiniamo le passate dalla più recente
+    passate.sort((a, b) => convertiInDataJS(b.data_orario) - convertiInDataJS(a.data_orario));
+    partitePassateGlobali = passate;
 
     // Ordiniamo le future
     future.sort((a, b) => convertiInDataJS(a.data_orario) - convertiInDataJS(b.data_orario));
     prossimePartiteGlobali = future;
 
     // Render match passati
-    passate.forEach(partita => {
-      const divPartita = document.createElement('div');
-      divPartita.className = 'match-item';
-      divPartita.innerHTML = `
-        <span>${partita.squadra_casa} <b>${partita.gol_casa} - ${partita.gol_trasferta}</b> ${partita.squadra_trasferta}</span>
-        <span class="badge-past">Finita</span>
-      `;
-      pastMatches.appendChild(divPartita);
-    });
+    renderPartitePassate();
 
     // Render match futuri
     renderProssimiMatch();
@@ -187,6 +183,48 @@ function renderProssimiMatch() {
     };
     
     upcomingMatches.appendChild(btnToggle);
+  }
+}
+
+// --- 4. FUNZIONE RENDERING PARTITE PASSATE ---
+function renderPartitePassate() {
+  const pastMatches = document.getElementById('past-matches');
+  if (!pastMatches) return;
+
+  pastMatches.innerHTML = '';
+
+  if (partitePassateGlobali.length === 0) {
+    pastMatches.innerHTML = '<p style="color: #666; padding: 10px 0;">Nessun risultato disponibile.</p>';
+    return;
+  }
+
+  const partiteDaMostrare = mostraTutteLePassate
+    ? partitePassateGlobali
+    : partitePassateGlobali.slice(0, 5);
+
+  partiteDaMostrare.forEach(partita => {
+    const divPartita = document.createElement('div');
+    divPartita.className = 'match-item';
+    divPartita.innerHTML = `
+      <a href="partita.html?id=${partita.id}" style="text-decoration: none; color: inherit; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <span>${partita.squadra_casa} <b>${partita.gol_casa} - ${partita.gol_trasferta}</b> ${partita.squadra_trasferta}</span>
+        <span class="badge-past">Finita</span>
+      </a>
+    `;
+    pastMatches.appendChild(divPartita);
+  });
+
+  if (partitePassateGlobali.length > 5) {
+    const btnToggle = document.createElement('button');
+    btnToggle.style.cssText = "display:block; width:100%; margin-top:15px; padding:8px; background-color:#f0f2f5; color:#007bff; border:1px solid #ddd; border-radius:4px; font-weight:bold; cursor:pointer;";
+    btnToggle.innerText = mostraTutteLePassate ? "Mostra Meno" : ` Mostra Altri (${partitePassateGlobali.length - 5})`;
+
+    btnToggle.onclick = () => {
+      mostraTutteLePassate = !mostraTutteLePassate;
+      renderPartitePassate();
+    };
+
+    pastMatches.appendChild(btnToggle);
   }
 }
 
