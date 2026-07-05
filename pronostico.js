@@ -40,7 +40,11 @@ async function caricaPartiteDisponibili() {
     // Svuotiamo il menu a tendina lasciando solo l'opzione di default
     selectPartita.innerHTML = '<option value="" disabled selected>-- Scegli una partita --</option>';
 
-    if (!partite || partite.length === 0) {
+    // 🕒 FILTRO: Escludiamo le partite già iniziate (data/ora nel passato rispetto ad adesso)
+    const adesso = new Date();
+    const partiteFuture = (partite || []).filter(partita => convertiInDataJS(partita.data_orario) > adesso);
+
+    if (partiteFuture.length === 0) {
       const option = document.createElement('option');
       option.disabled = true;
       option.textContent = "Nessuna partita disponibile al momento";
@@ -51,10 +55,10 @@ async function caricaPartiteDisponibili() {
     }
 
     // 🔥 ORDINAMENTO: Ordiniamo l'array delle partite dalla più vicina alla più lontana
-    partite.sort((a, b) => convertiInDataJS(a.data_orario) - convertiInDataJS(b.data_orario));
+    partiteFuture.sort((a, b) => convertiInDataJS(a.data_orario) - convertiInDataJS(b.data_orario));
 
     // Aggiungiamo le opzioni dinamicamente inserendo anche Giorno e Ora nel testo visibile
-    partite.forEach(partita => {
+    partiteFuture.forEach(partita => {
       const option = document.createElement('option');
       option.value = partita.id; 
       
