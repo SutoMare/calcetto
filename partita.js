@@ -65,17 +65,74 @@ async function caricaDettaglioPartita() {
       const nomeGiocatore = mappaGiocatori[p.giocatore_id] || 'Sconosciuto';
       const tr = document.createElement('tr');
 
-      let htmlRiga = `
-        <td><a href="giocatore.html?nome=${nomeGiocatore}" class="player-link">${nomeGiocatore}</a></td>
-        <td><b>${p.segno || '?'}</b></td>
-        <td><b>${p.gol_casa !== null ? p.gol_casa : '?'} - ${p.gol_trasferta !== null ? p.gol_trasferta : '?'}</b></td>
-        <td style="text-transform: capitalize;">${p.marcatori || '-'}</td>
-      `;
+      const risultatoPronosticato = `${p.gol_casa !== null ? p.gol_casa : '?'} - ${p.gol_trasferta !== null ? p.gol_trasferta : '?'}`;
+      const marcatori = p.marcatori ? p.marcatori : 'Nessuno';
 
-      // Aggiungiamo la cella dei punti solo se la partita è terminata
+      let htmlRiga = `<td><a href="giocatore.html?nome=${nomeGiocatore}" class="player-link">${nomeGiocatore}</a></td>`;
+
       if (partita.finita) {
+        // ---- CALCOLO DEI BADGE VISIVI (stessa logica di giocatore.js/admin.js) ----
+        let pGolCasa = Number(p.gol_casa);
+        let pGolTrasf = Number(p.gol_trasferta);
+        let rGolCasa = Number(partita.gol_casa);
+        let rGolTrasf = Number(partita.gol_trasferta);
+
+        let segnoPronostico = p.segno ? p.segno.trim().toUpperCase() : '';
+        let segnoReale = partita.segno_reale ? partita.segno_reale.trim().toUpperCase() : '';
+
+        // Badge Segno
+        let badgeSegno = (segnoPronostico === segnoReale)
+          ? ' <span class="point-badge">+1 pt</span>'
+          : ' <span class="no-points">(errato)</span>';
+
+        // Badge Risultato Esatto + Coerenza
+        let coerente = false;
+        if (pGolCasa > pGolTrasf && segnoPronostico === '1') coerente = true;
+        else if (pGolCasa < pGolTrasf && segnoPronostico === '2') coerente = true;
+        else if (pGolCasa === pGolTrasf && (segnoPronostico === '1' || segnoPronostico === '2')) coerente = true;
+
+        let risultatoEsatto = (pGolCasa === rGolCasa && pGolTrasf === rGolTrasf);
+        let badgeRisultato = (risultatoEsatto && coerente)
+          ? ' <span class="point-badge">+2 pt</span>'
+          : ' <span class="no-points">(errato)</span>';
+
+        // Badge Marcatori
+        let predMarcatori = p.marcatori ? p.marcatori.split(',').map(m => m.trim().toLowerCase()).filter(m => m !== '') : [];
+        let realiMarcatori = partita.marcatori_reali ? partita.marcatori_reali.toLowerCase() : "";
+        let badgeMarcatori = '';
+
+        if (predMarcatori.length > 0) {
+          let tuttiAzzeccati = true;
+          for (let marcatore of predMarcatori) {
+            if (!realiMarcatori.includes(marcatore)) {
+              tuttiAzzeccati = false; break;
+            }
+          }
+          if (tuttiAzzeccati) {
+            let puntiMarcatori = 0;
+            for (let i = 0; i < predMarcatori.length; i++) puntiMarcatori += (i + 2);
+            badgeMarcatori = ` <span class="point-badge">+${puntiMarcatori} pt</span>`;
+          } else {
+            badgeMarcatori = ' <span class="no-points">(errato)</span>';
+          }
+        }
+
+        htmlRiga += `
+          <td><div class="pred-detail">${p.segno || '?'}${badgeSegno}</div></td>
+          <td><div class="pred-detail">${risultatoPronosticato}${badgeRisultato}</div></td>
+          <td style="text-transform: capitalize;"><div class="pred-detail">${marcatori}${badgeMarcatori}</div></td>
+        `;
+
+        // Aggiungiamo la cella dei punti solo se la partita è terminata
         let punti = p.punti_guadagnati !== null ? p.punti_guadagnati : 0;
         htmlRiga += `<td class="total-points-cell">${punti} pt</td>`;
+      } else {
+        // Partita non ancora finita: nessun risultato reale con cui confrontare, niente badge
+        htmlRiga += `
+          <td><b>${p.segno || '?'}</b></td>
+          <td><b>${risultatoPronosticato}</b></td>
+          <td style="text-transform: capitalize;">${marcatori}</td>
+        `;
       }
 
       tr.innerHTML = htmlRiga;

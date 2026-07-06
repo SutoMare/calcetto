@@ -538,6 +538,51 @@ textarea:focus {
   vertical-align: middle;
 }
 
+/* --- BOTTONE SECONDARIO ("Mostra Altri / Mostra Meno") --- */
+.btn-toggle {
+  display: block;
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px;
+  background-color: var(--card-bg-alt);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: none;
+}
+
+.btn-toggle:hover {
+  background-color: var(--border-color-light);
+  color: var(--text-main);
+  transform: none;
+  box-shadow: none;
+}
+
+/* --- INTESTAZIONI CLASSIFICA ORDINABILI --- */
+.leaderboard-table th.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.leaderboard-table th.sortable-th:hover {
+  color: var(--text-main);
+}
+
+.leaderboard-table th.sortable-th.active-sort {
+  color: var(--primary-color);
+}
+
+.sort-arrow {
+  margin-left: 4px;
+  font-size: 0.75em;
+}
+
 /* --- PANNELLO ADMIN: LOG CONSOLE --- */
 #log-area {
   margin-top: 30px;

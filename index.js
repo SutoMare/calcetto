@@ -8,6 +8,8 @@ let prossimePartiteGlobali = [];
 let mostraTutteLeProssime = false; 
 let partitePassateGlobali = [];
 let mostraTutteLePassate = false;
+let giocatoriGlobali = [];
+let sortKeyClassifica = 'punteggio_totale'; // colonna attiva di ordinamento
 
 // --- INTERVALLO DEL TURNO ATTUALMENTE IN CORSO ---
 // Le partite con data_orario precedente a INIZIO_TURNO_CORRENTE appartengono
@@ -51,42 +53,87 @@ async function caricaClassifica() {
   try {
     const { data: giocatori, error } = await supabase
       .from('giocatori')
-      .select(`nome, punteggio_totale, ${COLONNA_TURNO_CORRENTE}`)
-      .order('punteggio_totale', { ascending: false });
+      .select(`nome, punteggio_totale, ${COLONNA_TURNO_CORRENTE}`);
 
     if (error) throw error;
 
-    leaderboardBody.innerHTML = '';
-
-    if (!giocatori || giocatori.length === 0) {
-      leaderboardBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nessun giocatore registrato</td></tr>';
-      return;
-    }
-
-    giocatori.forEach((giocatore, index) => {
-      const posizione = index + 1; 
-      const tr = document.createElement('tr');
-      const puntiTurno = giocatore[COLONNA_TURNO_CORRENTE] ?? 0;
-      
-      tr.innerHTML = `
-        <td>${posizione}</td>
-        <td>
-          <a href="giocatore.html?nome=${giocatore.nome.toLowerCase()}" class="player-link" style="text-transform: capitalize;">
-            ${giocatore.nome}
-          </a>
-        </td>
-        <td><b>${giocatore.punteggio_totale}</b></td>
-        <td>${puntiTurno}</td>
-      `;
-      
-      leaderboardBody.appendChild(tr);
-    });
+    giocatoriGlobali = giocatori || [];
+    renderClassifica();
 
   } catch (error) {
     console.error("Errore nel caricamento della classifica:", error.message);
     leaderboardBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Errore nel caricamento dei dati</td></tr>';
   }
 }
+
+// --- 1b. FUNZIONE DI RENDERING/ORDINAMENTO DELLA CLASSIFICA ---
+function renderClassifica() {
+  const leaderboardBody = document.getElementById('leaderboard-body');
+  const thTotali = document.getElementById('th-punti-totali');
+  const thTurno = document.getElementById('th-punti-turno');
+  if (!leaderboardBody) return;
+
+  leaderboardBody.innerHTML = '';
+
+  if (!giocatoriGlobali || giocatoriGlobali.length === 0) {
+    leaderboardBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nessun giocatore registrato</td></tr>';
+    return;
+  }
+
+  // Ordiniamo una copia in base alla colonna scelta (sempre decrescente)
+  const giocatoriOrdinati = [...giocatoriGlobali].sort((a, b) => {
+    const valA = Number(a[sortKeyClassifica]) || 0;
+    const valB = Number(b[sortKeyClassifica]) || 0;
+    return valB - valA;
+  });
+
+  // Aggiorniamo l'evidenziazione + freccia sulle intestazioni cliccabili
+  if (thTotali && thTurno) {
+    thTotali.classList.toggle('active-sort', sortKeyClassifica === 'punteggio_totale');
+    thTurno.classList.toggle('active-sort', sortKeyClassifica === COLONNA_TURNO_CORRENTE);
+
+    thTotali.innerHTML = `Punti Totali${sortKeyClassifica === 'punteggio_totale' ? ' <span class="sort-arrow">▾</span>' : ''}`;
+    thTurno.innerHTML = `Punti Turno${sortKeyClassifica === COLONNA_TURNO_CORRENTE ? ' <span class="sort-arrow">▾</span>' : ''}`;
+  }
+
+  giocatoriOrdinati.forEach((giocatore, index) => {
+    const posizione = index + 1;
+    const tr = document.createElement('tr');
+    const puntiTurno = giocatore[COLONNA_TURNO_CORRENTE] ?? 0;
+
+    tr.innerHTML = `
+      <td>${posizione}</td>
+      <td>
+        <a href="giocatore.html?nome=${giocatore.nome.toLowerCase()}" class="player-link" style="text-transform: capitalize;">
+          ${giocatore.nome}
+        </a>
+      </td>
+      <td><b>${giocatore.punteggio_totale}</b></td>
+      <td>${puntiTurno}</td>
+    `;
+
+    leaderboardBody.appendChild(tr);
+  });
+}
+
+// Colleghiamo il click sulle intestazioni della classifica per cambiare l'ordinamento
+document.addEventListener('DOMContentLoaded', () => {
+  const thTotali = document.getElementById('th-punti-totali');
+  const thTurno = document.getElementById('th-punti-turno');
+
+  if (thTotali) {
+    thTotali.addEventListener('click', () => {
+      sortKeyClassifica = 'punteggio_totale';
+      renderClassifica();
+    });
+  }
+  if (thTurno) {
+    thTurno.addEventListener('click', () => {
+      sortKeyClassifica = COLONNA_TURNO_CORRENTE;
+      renderClassifica();
+    });
+  }
+});
 
 // --- 2. FUNZIONE PER CARICARE LE PARTITE ---
 async function caricaPartite() {
@@ -174,7 +221,7 @@ function renderProssimiMatch() {
 
   if (prossimePartiteGlobali.length > 5) {
     const btnToggle = document.createElement('button');
-    btnToggle.style.cssText = "display:block; width:100%; margin-top:15px; padding:8px; background-color:#f0f2f5; color:#007bff; border:1px solid #ddd; border-radius:4px; font-weight:bold; cursor:pointer;";
+    btnToggle.className = 'btn-toggle';
     btnToggle.innerText = mostraTutteLeProssime ? "Mostra Meno" : ` Mostra Altri (${prossimePartiteGlobali.length - 5})`;
     
     btnToggle.onclick = () => {
@@ -216,7 +263,7 @@ function renderPartitePassate() {
 
   if (partitePassateGlobali.length > 5) {
     const btnToggle = document.createElement('button');
-    btnToggle.style.cssText = "display:block; width:100%; margin-top:15px; padding:8px; background-color:#f0f2f5; color:#007bff; border:1px solid #ddd; border-radius:4px; font-weight:bold; cursor:pointer;";
+    btnToggle.className = 'btn-toggle';
     btnToggle.innerText = mostraTutteLePassate ? "Mostra Meno" : ` Mostra Altri (${partitePassateGlobali.length - 5})`;
 
     btnToggle.onclick = () => {
