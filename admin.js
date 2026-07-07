@@ -91,7 +91,7 @@ btnCalcola.addEventListener('click', async () => {
         await supabase.from('pronostici').update({ punti_guadagnati: 0 }).eq('giocatore_id', pronostico.giocatore_id).eq('partita_id', pronostico.partita_id);
         continue;
       }
-
+      
       let puntiGiocata = 0;
 
       // 1. GOL e SEGNI
@@ -113,7 +113,7 @@ btnCalcola.addEventListener('click', async () => {
         coerente = true; // Vittoria in casa
       } else if (pGolCasa < pGolTrasf && segnoPronostico === '2') {
         coerente = true; // Vittoria in trasferta
-      } else if (pGolCasa === pGolTrasf && (segnoPronostico === '1' || segnoPronostico === '2')) {
+      } else if (pGolCasa === pGolTrasf && segnoPronostico === 'X') {
         coerente = true; // Pareggio ai supplementari, ma il segno indica chi vince ai rigori!
       }
 
