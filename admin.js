@@ -8,22 +8,9 @@ function log(messaggio) {
 }
 
 // --- INTERVALLO DEL TURNO ATTUALMENTE IN CORSO ---
-// Le partite con data_orario al di fuori di questo intervallo appartengono a
-// un turno già concluso (i cui punti sono stati congelati a mano in una delle
-// colonne dedicate: r16_score, r8_score, r4_score, final_score) o
-// a un turno futuro non ancora iniziato, e vanno quindi ignorate nel calcolo
-// del punteggio del turno corrente.
-// Aggiorna queste due date a mano a ogni cambio di turno.
-const INIZIO_TURNO_CORRENTE = new Date(2026, 6, 4, 12, 0);  // placeholder
-const FINE_TURNO_CORRENTE   = new Date(2026, 6, 8, 23, 59); // placeholder
-
-// --- COLONNA DEL TURNO ATTUALMENTE IN CORSO ---
-// Deve essere una tra: 'r16_score', 'r8_score', 'r4_score', 'final_score'.
-// È la colonna in cui viene scritto il punteggio live (non diviso) delle
-// partite che cadono nell'intervallo di date qui sopra. Aggiornala a mano
-// insieme alle due date ogni volta che si passa al turno successivo: il
-// valore lasciato nella colonna del turno precedente resta così "congelato".
-const COLONNA_TURNO_CORRENTE = 'r8_score'; // placeholder
+const INIZIO_TURNO_CORRENTE = new Date(2026, 6, 8, 12, 0);  
+const FINE_TURNO_CORRENTE   = new Date(2026, 6, 12, 12, 0);
+const COLONNA_TURNO_CORRENTE = 'r4_score'; 
 
 function convertiInDataJS(stringaData) {
   if (!stringaData) return new Date(8640000000000000);

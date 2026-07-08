@@ -12,19 +12,9 @@ let giocatoriGlobali = [];
 let sortKeyClassifica = 'punteggio_totale'; // colonna attiva di ordinamento
 
 // --- INTERVALLO DEL TURNO ATTUALMENTE IN CORSO ---
-// Le partite con data_orario precedente a INIZIO_TURNO_CORRENTE appartengono
-// a un turno già concluso e "congelato" in una delle colonne dedicate
-// (r16_score, r8_score, r4_score, final_score) e quindi non
-// devono più comparire nelle tabelle qui sotto.
-// Aggiorna queste due date a mano a ogni cambio di turno.
-const INIZIO_TURNO_CORRENTE = new Date(2026, 6, 4, 12, 0);  // placeholder
-const FINE_TURNO_CORRENTE   = new Date(2026, 6, 8, 23, 59); // placeholder (qui non usata per il filtro delle tabelle, tenuta per coerenza con admin.js)
-
-// --- COLONNA DEL TURNO ATTUALMENTE IN CORSO ---
-// Deve essere IDENTICA a quella impostata in admin.js: una tra
-// 'r16_score', 'r8_score', 'r4_score', 'final_score'. Serve per sapere quale
-// colonna leggere e mostrare come "punti turno corrente" in classifica.
-const COLONNA_TURNO_CORRENTE = 'r8_score'; // placeholder
+const INIZIO_TURNO_CORRENTE = new Date(2026, 6, 8, 12, 0);  
+const FINE_TURNO_CORRENTE   = new Date(2026, 6, 12, 12, 0);
+const COLONNA_TURNO_CORRENTE = 'r4_score'; 
 
 // --- FUNZIONE AUSILIARIA PER LE DATE ---
 function convertiInDataJS(stringaData) {
