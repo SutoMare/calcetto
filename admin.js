@@ -179,7 +179,7 @@ btnCalcola.addEventListener('click', async () => {
       // --- PUNTEGGIO TOTALE ---
       // Nota: se un punteggio di turno è 0 (o non ancora impostato), la
       // divisione non crea alcun problema: 0 diviso per qualsiasi cosa resta 0.
-      let puntiTotali = (raw.r16_score / 4) + (raw.r8_score / 2) + raw.r4_score + (raw.final_score * 2);
+      let puntiTotali = (raw.r16_score / 4) + (raw.r8_score / 2) + (raw.r4_score / 2) + (raw.final_score * 2);
 
       await supabase.from('giocatori').update({
         [COLONNA_TURNO_CORRENTE]: puntiTurnoCorrente,
