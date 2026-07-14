@@ -8,9 +8,9 @@ function log(messaggio) {
 }
 
 // --- INTERVALLO DEL TURNO ATTUALMENTE IN CORSO ---
-const INIZIO_TURNO_CORRENTE = new Date(2026, 6, 8, 12, 0);  
-const FINE_TURNO_CORRENTE   = new Date(2026, 6, 12, 12, 0);
-const COLONNA_TURNO_CORRENTE = 'r4_score'; 
+const INIZIO_TURNO_CORRENTE = new Date(2026, 6, 14, 12, 0);  
+const FINE_TURNO_CORRENTE   = new Date(2026, 6, 16, 12, 0);
+const COLONNA_TURNO_CORRENTE = 'semi_score'; 
 
 function convertiInDataJS(stringaData) {
   if (!stringaData) return new Date(8640000000000000);

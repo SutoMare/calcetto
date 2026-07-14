@@ -12,9 +12,9 @@ let giocatoriGlobali = [];
 let sortKeyClassifica = 'punteggio_totale'; // colonna attiva di ordinamento
 
 // --- INTERVALLO DEL TURNO ATTUALMENTE IN CORSO ---
-const INIZIO_TURNO_CORRENTE = new Date(2026, 6, 8, 12, 0);  
-const FINE_TURNO_CORRENTE   = new Date(2026, 6, 12, 12, 0);
-const COLONNA_TURNO_CORRENTE = 'r4_score'; 
+const INIZIO_TURNO_CORRENTE = new Date(2026, 6, 14, 12, 0);  
+const FINE_TURNO_CORRENTE   = new Date(2026, 6, 16, 12, 0);
+const COLONNA_TURNO_CORRENTE = 'semi_score'; 
 
 // --- FUNZIONE AUSILIARIA PER LE DATE ---
 function convertiInDataJS(stringaData) {
