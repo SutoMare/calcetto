@@ -159,7 +159,7 @@ btnCalcola.addEventListener('click', async () => {
     // resta sempre aggiornato finché non si passa al turno successivo.
     const { data: giocatori, error: errGiocatori } = await supabase
       .from('giocatori')
-      .select('id, r16_score, r8_score, r4_score, final_score');
+      .select('id, r16_score, r8_score, r4_score, semi_score, final_score');
     if (errGiocatori) throw errGiocatori;
 
     for (let giocatore of giocatori) {
@@ -172,6 +172,7 @@ btnCalcola.addEventListener('click', async () => {
         r16_score: Number(giocatore.r16_score) || 0,
         r8_score: Number(giocatore.r8_score) || 0,
         r4_score: Number(giocatore.r4_score) || 0,
+        semi_score: Number(giocatore.semi_score) || 0,
         final_score: Number(giocatore.final_score) || 0,
       };
       raw[COLONNA_TURNO_CORRENTE] = puntiTurnoCorrente;
@@ -179,7 +180,7 @@ btnCalcola.addEventListener('click', async () => {
       // --- PUNTEGGIO TOTALE ---
       // Nota: se un punteggio di turno è 0 (o non ancora impostato), la
       // divisione non crea alcun problema: 0 diviso per qualsiasi cosa resta 0.
-      let puntiTotali = (raw.r16_score / 4) + (raw.r8_score / 2) + (raw.r4_score / 2) + (raw.final_score * 2);
+      let puntiTotali = (raw.r16_score / 4) + (raw.r8_score / 2) + (raw.r4_score / 2) + raw.semi_score + (raw.final_score * 2);
 
       await supabase.from('giocatori').update({
         [COLONNA_TURNO_CORRENTE]: puntiTurnoCorrente,

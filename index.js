@@ -274,14 +274,15 @@ async function caricaVincitoriTurni() {
   const turni = [
     { colonna: 'r16_score', etichetta: 'Sedicesimi' },
     { colonna: 'r8_score', etichetta: 'Ottavi' },
-    { colonna: 'r4_score', etichetta: 'Quarti/Semifinale' },
+    { colonna: 'r4_score', etichetta: 'Quarti' },
+    { colonna: 'semi_score', etichetta: 'Semifinale' },
     { colonna: 'final_score', etichetta: 'Finale' },
   ];
 
   try {
     const { data: giocatori, error } = await supabase
       .from('giocatori')
-      .select('nome, r16_score, r8_score, r4_score, final_score');
+      .select('nome, r16_score, r8_score, r4_score, semi_score, final_score');
 
     if (error) throw error;
 
